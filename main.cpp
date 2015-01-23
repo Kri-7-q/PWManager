@@ -1,5 +1,6 @@
 #include "options.h"
 #include "consoleinterface.h"
+#include "password.h"
 
 int main(int argc, char *argv[])
 {
@@ -22,8 +23,19 @@ int main(int argc, char *argv[])
     // Execute command
     Options::Command command = options.command();
     switch (command) {
-    case Options::New:
+    case Options::New: {
+        Password pw;
+        int passwordLength = account.valueWithOption('l').toInt();
+        QString characterDefinition = account.valueWithOption('s').toString();
+        QString password = pw.passwordFromDefinition(passwordLength, characterDefinition);
+        if (pw.hasError()) {
+            userInterface.printError(pw.errorMessage());
+            return -1;
+        }
+        account.insertWithOption('k', QVariant(password));
+        userInterface.printSingleAccount(account);
         break;
+    }
     default:
         break;
     }
