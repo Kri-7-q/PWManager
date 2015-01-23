@@ -37,6 +37,9 @@ QString Persistence::getDatabaseNameFor(const char option)
     case 'k':
         return "password";
         break;
+    case 't':
+        return "lastModified";
+        break;
     default:
         return "";
         break;

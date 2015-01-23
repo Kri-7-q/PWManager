@@ -7,6 +7,7 @@ class Account : public QVariantHash
 {
 public:
     Account();
+
 };
 
 #endif // ACCOUNT_H

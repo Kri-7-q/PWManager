@@ -34,6 +34,7 @@ Account Options::parseOptions(const int argc, char **argv)
     struct option long_option[] = {
         {"help", no_argument, 0, 'h'},
         {"answer", (m_command == New || m_command == Modify) ? required_argument : no_argument, 0, 'r'},
+        {"all", no_argument, 0, 'e'},
         {0, 0, 0, 0}
     };
 
@@ -65,16 +66,25 @@ Account Options::parseOptions(const int argc, char **argv)
             break;
         case '?':
             m_hasError = true;
-            m_errorMessage.append((char)optopt).append(",");
+            setFailedValue(InvalidOption, QString((char)optopt));
             break;
         default:
             m_needHelp = true;
             break;
         }
     }
+    if (optind < argc-1) {
+        m_hasError = true;
+        ++optind;
+        while (optind < argc) {
+            setFailedValue(LeftArgument, QString(argv[optind++]));
+        }
+    }
 
     return account;
 }
+
+// Setter and Getter
 bool Options::hasError() const
 {
     return m_hasError;
@@ -85,21 +95,42 @@ void Options::setHasError(bool hasError)
     m_hasError = hasError;
 }
 
+/**
+ * Return error messages.
+ * @return
+ */
 QString Options::errorMessage()
 {
-    if (m_errorMessage.endsWith(',')) {
-        m_errorMessage.remove(m_errorMessage.length()-1, 1);
+    if(! hasError()) {
+        return QString("No errors occured.");
     }
-    return "Invalid options found : " + m_errorMessage + '\n';
+    QString errorMsg = getInvalidOptionMsg();
+    errorMsg.append(getLeftArgumentMsg());
+
+    return errorMsg;
 }
 
-void Options::setErrorMessage(const QString &errorMessage)
+/**
+ * Get help text to command or in general.
+ * @return
+ */
+QStringList Options::getHelpText()
 {
-    m_errorMessage = errorMessage;
+    switch (m_command) {
+    case New:
+        return getHelpForNew();
+    case GeneratePW:
+        return getHelpForGeneratePW();
+    case Modify:
+        return getHelpForModify();
+    case Show:
+        return getHelpForShow();
+    case Remove:
+        return getHelpForRemove();
+    default:
+        return getHelpInGeneral();
+    }
 }
-
-
-
 
 /**
  * Parse the first command line parameter.
@@ -124,11 +155,10 @@ Options::Command Options::parseCommand(char *parameter)
     if (commandString == "remove") {
         return Remove;
     }
-    if (commandString == "help") {
-        return Help;
-    }
 
-    return None;
+    m_needHelp = true;
+
+    return Help;
 }
 
 /**
@@ -149,7 +179,7 @@ QString Options::getCommandsOptions()
         return "p:u:i:q:r:l:s:k:h";
         break;
     case Show:
-        return "p:u:i:qrlskah";
+        return "p:u:i:qrlskaeh";
         break;
     case Remove:
         return "p:u:i:";
@@ -158,4 +188,145 @@ QString Options::getCommandsOptions()
         return "h";
         break;
     }
+}
+
+/**
+ * Creates a error message when invalid options are found.
+ * @return
+ */
+QString Options::getInvalidOptionMsg() const
+{
+    QStringList optionList = m_errorHashTable.value(InvalidOption);
+    if (optionList.isEmpty()) {
+        return QString();
+    }
+    QString errorMsg("Invalid option found : ");
+    for (QString wrongOption : optionList) {
+        errorMsg.append(wrongOption).append(", ");
+    }
+    errorMsg.remove(errorMsg.length()-2, 2).append('\n');
+
+    return errorMsg;
+}
+
+/**
+ * Creates a error message when arguments left.
+ * @return
+ */
+QString Options::getLeftArgumentMsg() const
+{
+    QStringList argumentList = m_errorHashTable.value(LeftArgument);
+    if (argumentList.isEmpty()) {
+        return QString();
+    }
+    QString errorMsg("Arguments left : ");
+    for (QString argument : argumentList) {
+        errorMsg.append(argument).append(", ");
+    }
+    errorMsg.remove(errorMsg.length()-2, 2).append('\n');
+
+    return errorMsg;
+}
+
+/**
+ * Set a wrong option or argument to the error list.
+ * @param errorType
+ * @param value
+ */
+void Options::setFailedValue(const Options::ErrorType errorType, const QString &value)
+{
+    QStringList list = m_errorHashTable.take(errorType);
+    list << value;
+    m_errorHashTable.insert(errorType, list);
+}
+
+/**
+ * General help text.
+ * @return
+ */
+QStringList Options::getHelpInGeneral()
+{
+    QStringList help;
+    help << "pwmanager [command] [options]\n";
+    help << "pwmanager [command] --help\n";
+    help << "   Commands :  Help, New, GeneratePW, Show, Modify, Remove\n\n";
+    help << "   help        Shows this help text.\n";
+    help << "               --help has the same effect.\n";
+    help << "   new         Adds a new account to database.\n";
+    help << "   generatepw  Generates a new password for an existing account.\n";
+    help << "   show        To show one or more accounts.\n";
+    help << "   modify      Modifies an existing account.\n";
+    help << "   remove      Removes an existing account from database.\n";
+
+    return help;
+}
+
+/**
+ * Help text for command new.
+ * @return
+ */
+QStringList Options::getHelpForNew()
+{
+    QStringList help;
+    help << "pwmanager new [options]\n";
+    help << "Insert a new account into database.\n\n";
+    help << optP << optU << "optional\n" << optK << optQ << optAnswer << optL << optS;
+
+    return help;
+}
+
+/**
+ * Help text for command generatePW.
+ * @return
+ */
+QStringList Options::getHelpForGeneratePW()
+{
+    QStringList help;
+    help << "pwmanager generatepw [options]\n";
+    help << "Generates a new passwort for an given account.\n\n";
+    help << optI << optP << optU << "optional\n" << optL << optS;
+
+    return help;
+}
+
+/**
+ * Help text for command modify.
+ * @return
+ */
+QStringList Options::getHelpForModify()
+{
+    QStringList help;
+    help << "pwmanager modify [options]\n";
+    help << "Can modify some values of an account.\n\n";
+    help << optI << optP << optU << "optional\n" << optQ << optAnswer << optK << optL << optS;
+
+    return help;
+}
+
+/**
+ * Help text for command show.
+ * @return
+ */
+QStringList Options::getHelpForShow()
+{
+    QStringList help;
+    help << "pwmanager show [options]\n";
+    help << "Shows chosen infomation about one or more accounts.\n\n";
+    help << optP<< optAll << "optional\n" << optU << optI << optK << optQ << optAnswer << optL << optS << optA;
+
+    return help;
+}
+
+/**
+ * Help text for command remove.
+ * @return
+ */
+QStringList Options::getHelpForRemove()
+{
+    QStringList help;
+    help << "pwmanager remove [options]\n";
+    help << "Removes an account from database.\n\n";
+    help << optI << "or\n" << optP << optU;
+
+    return help;
 }
