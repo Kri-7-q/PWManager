@@ -49,7 +49,7 @@ Account Options::parseOptions(const int argc, char **argv)
         }
 
         QString optionValue = (optarg == 0) ? QString() : QString(optarg);
-        QString databaseName = Persistence::getDatabaseNameFor((char)foundOption);
+        QString databaseName = Account::databaseNameOfOption((char)foundOption);
 
         switch (foundOption) {
         case 'p':

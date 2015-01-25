@@ -1,6 +1,10 @@
 #include "options.h"
 #include "consoleinterface.h"
-#include "password.h"
+#include "pwgenerator.h"
+#include "persistence.h"
+#include <QDebug>
+#include <QDateTime>
+
 
 int main(int argc, char *argv[])
 {
@@ -24,16 +28,25 @@ int main(int argc, char *argv[])
     Options::Command command = options.command();
     switch (command) {
     case Options::New: {
-        Password pw;
+        PwGenerator pwGenerator;
         int passwordLength = account.valueWithOption('l').toInt();
         QString characterDefinition = account.valueWithOption('s').toString();
-        QString password = pw.passwordFromDefinition(passwordLength, characterDefinition);
-        if (pw.hasError()) {
-            userInterface.printError(pw.errorMessage());
+        QString password = pwGenerator.passwordFromDefinition(passwordLength, characterDefinition);
+        if (pwGenerator.hasError()) {
+            userInterface.printError(pwGenerator.errorMessage());
             return -1;
         }
         account.insertWithOption('k', QVariant(password));
         userInterface.printSingleAccount(account);
+        Persistence database;
+        account.insertWithOption('t', QVariant(QDateTime::currentDateTime()));
+        bool result = database.persistAccount(account);
+        qDebug() << "Write into database successfully : " << result;
+        if (result) {
+            userInterface.printSuccessMsg("Account successfully persisted.\n");
+        } else {
+            userInterface.printError(database.errorMessage());
+        }
         break;
     }
     default:

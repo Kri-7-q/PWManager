@@ -52,6 +52,16 @@ void ConsoleInterface::printHelp(const QStringList &help)
 }
 
 /**
+ * Print a success message in color green.
+ * @param message
+ */
+void ConsoleInterface::printSuccessMsg(const QString &message)
+{
+    QString msg = QString(message).prepend(m_colorGreen).append(m_colorStandard);
+    outStream << msg;
+}
+
+/**
  * Get the print order of columns.
  * The option character are translated to column names.
  * Those column names will be stored in a list and in
@@ -63,7 +73,7 @@ QStringList ConsoleInterface::getPrintOrderForColumns()
     QStringList columnList;
     int length = strlen(printOrder);
     for (int i=0; i<length; ++i) {
-        QString column = Persistence::getDatabaseNameFor(printOrder[i]);
+        QString column = Account::databaseNameOfOption(printOrder[i]);
         columnList << column;
     }
 
@@ -86,7 +96,7 @@ void ConsoleInterface::printTableHeader(const Account &account, const ColumnWidt
     for (QString column : m_printOrderList) {
         if (account.contains(column)) {
             QString fillSpace = QString(columnWidth.spaceToFillColumn(column, column), space);
-            outStream << ' ' << m_colorGreen << column << m_colorStandard << fillSpace << '|';
+            outStream << ' ' << m_colorLBlue << column << m_colorStandard << fillSpace << '|';
         }
     }
     outStream << '\n';

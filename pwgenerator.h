@@ -4,10 +4,10 @@
 #include "characterdefinition.h"
 #include <QTime>
 
-class Password
+class PwGenerator
 {
 public:
-    Password();
+    PwGenerator();
 
     enum State { Number, Asterisk, RangeBegin, RangeTo, RangeEnd, RangeClose, Set };
 

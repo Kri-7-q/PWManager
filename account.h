@@ -1,7 +1,6 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
-#include "persistence.h"
 #include <QVariantHash>
 
 class Account : public QVariantHash
@@ -11,6 +10,9 @@ public:
 
     void insertWithOption(const char option, const QVariant &value);
     QVariant valueWithOption(const char option);
+
+    // Static methods
+    static QString databaseNameOfOption(const char option);
 };
 
 #endif // ACCOUNT_H

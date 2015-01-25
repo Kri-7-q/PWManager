@@ -1,10 +1,10 @@
-#include "password.h"
+#include "pwgenerator.h"
 
 /**
  * Constructor
  * Standard
  */
-Password::Password() :
+PwGenerator::PwGenerator() :
     m_hasError(false)
 {
 }
@@ -15,7 +15,7 @@ Password::Password() :
  * @param definitionString
  * @return
  */
-QString Password::passwordFromDefinition(const ushort passwordLength, const QString &definitionString)
+QString PwGenerator::passwordFromDefinition(const ushort passwordLength, const QString &definitionString)
 {
     if (passwordLength < 1) {
         setErrorMessage(QString("Password length is %1 this is to less !").arg(passwordLength));
@@ -49,7 +49,7 @@ QString Password::passwordFromDefinition(const ushort passwordLength, const QStr
  * @param definition
  * @return
  */
-QList<CharacterDefinition> Password::parseCharacterDefinitionString(const QString &definitionString)
+QList<CharacterDefinition> PwGenerator::parseCharacterDefinitionString(const QString &definitionString)
 {
     QList<CharacterDefinition> definitionList;
 
@@ -147,7 +147,7 @@ QList<CharacterDefinition> Password::parseCharacterDefinitionString(const QStrin
  * @param definitionList
  * @return
  */
-QList<CharacterDefinition> Password::fixAmountValues(const ushort passwordLength, const QList<CharacterDefinition> &definitionList)
+QList<CharacterDefinition> PwGenerator::fixAmountValues(const ushort passwordLength, const QList<CharacterDefinition> &definitionList)
 {
     QList<CharacterDefinition> withoutAmountList;
     QList<CharacterDefinition> hasAmountList;
@@ -186,7 +186,7 @@ QList<CharacterDefinition> Password::fixAmountValues(const ushort passwordLength
  * @param definition
  * @return
  */
-QList<QChar> Password::randomCharacterFromDefinition(const CharacterDefinition &definition)
+QList<QChar> PwGenerator::randomCharacterFromDefinition(const CharacterDefinition &definition)
 {
     QList<QChar> list;
     qsrand(QTime::currentTime().msec());
@@ -199,7 +199,7 @@ QList<QChar> Password::randomCharacterFromDefinition(const CharacterDefinition &
 }
 
 // PRIVATE - Setter
-void Password::setErrorMessage(const QString &message)
+void PwGenerator::setErrorMessage(const QString &message)
 {
     m_hasError = true;
     m_errorMessage = message;
