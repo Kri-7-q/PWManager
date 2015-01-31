@@ -1,12 +1,33 @@
 #include "persistence.h"
 
 Persistence::Persistence() :
-    primaryKey("id"),
-    unique(QStringList() << QString("provider") << QString("username")),
-    tableName("Account"),
-    databaseName("PWManager")
+    m_primaryKey("id"),
+    m_unique(QStringList() << QString("provider") << QString("username")),
+    m_tableName("Account"),
+    m_databaseName("pwmanager"),
+    m_hasError(false)
 {
+    addDatabase("local", m_databaseName, "localhost", 3306, "root", "postgres");
+}
 
+/**
+ * Add a MySql database with a identifier name.
+ * All attributes are set. Database is ready to open.
+ * @param identifier
+ * @param dbName
+ * @param host
+ * @param port
+ * @param pw
+ * @param username
+ */
+void Persistence::addDatabase(const QString &identifier, const QString &dbName, const QString &host, const ushort port, const QString &pw, const QString &username)
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", identifier);
+    db.setDatabaseName(dbName);
+    db.setHostName(host);
+    db.setPort(port);
+    db.setPassword(pw);
+    db.setUserName(username);
 }
 
 /**
@@ -27,14 +48,14 @@ QString Persistence::errorMessage()
  */
 bool Persistence::persistAccount(const Account &account)
 {
-    if (! openLocalDatabase("root", "root")) {
+    QSqlDatabase db = QSqlDatabase::database("local");
+    if (! db.open()) {
         return false;
     }
-    QSqlDatabase db = QSqlDatabase::database("local");
-    QStringList columnNameList = columnNames(db, tableName);
+    QStringList columnNameList = columnNames(db, m_tableName);
     QString columns = queryColumnString(columnNameList, account);
     QString bindStrings = queryColumnString(columnNameList, account, true);
-    QString queryString = QString("INSERT INTO %1 (%2) VALUES(%3)").arg(tableName).arg(columns).arg(bindStrings);
+    QString queryString = QString("INSERT INTO %1 (%2) VALUES(%3)").arg(m_tableName).arg(columns).arg(bindStrings);
     QSqlQuery query(db);
     query.prepare(queryString);
     QStringList columnList = account.keys();
@@ -50,21 +71,32 @@ bool Persistence::persistAccount(const Account &account)
 }
 
 /**
- * Open a connection to local database.
- * @param username
- * @param password
+ * Reads one or more Account objects from database.
+ * Funktion searches for primary key or uniqe attributes
+ * in the Account object.
+ * If option '--all' (e) is set than all stored Account
+ * objects are read.
+ * @param account
  * @return
  */
-bool Persistence::openLocalDatabase(const QString &username, const QString &password)
+QList<Account> Persistence::findAccount(const Account &account)
 {
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL", "local");
-    db.setDatabaseName(databaseName);
-    db.setHostName("127.0.0.1");
-    db.setPort(3306);
-    db.setUserName(username);
-    db.setPassword(password);
+    QSqlDatabase db = QSqlDatabase::database("local");
+    qDebug() << "DB : " << db;
+    if (! db.open()) {
+        m_hasError = true;
+        return QList<Account>();
+    }
+    QStringList columnNameList = columnNames(db, m_tableName);
+    QString queryColumns = queryColumnString(columnNameList, account);
+    QString queryWhereClause = sqlWhereClauseFind(account);
+    QString querySQL = QString("SELECT %1 FROM %2%3").arg(queryColumns).arg(m_tableName).arg(queryWhereClause);
+    qDebug() << "Query String : " << querySQL;
+    QSqlQuery query = db.exec(querySQL);
+    QList<Account> accountList = getAccountList(query);
+    db.close();
 
-    return db.open();
+    return accountList;
 }
 
 /**
@@ -106,4 +138,52 @@ QStringList Persistence::columnNames(QSqlDatabase &db, const QString &table)
     }
 
     return columnName;
+}
+
+/**
+ * Get a SQL where for reading account objects from database.
+ * @param account
+ * @return
+ */
+QString Persistence::sqlWhereClauseFind(const Account &account)
+{
+    if (account.contains("e")) {
+        return QString();
+    }
+    QString whereClause;
+    QVariant primaryKeyValue = account.value(m_primaryKey, QVariant());
+    if (! primaryKeyValue.isNull()) {
+        whereClause  = QString(" WHERE %1=%2");
+        whereClause.arg(m_primaryKey).arg(primaryKeyValue.toInt());
+    } else {
+        whereClause = QString(" WHERE %1=%2 AND %3=%4");
+        whereClause.arg(m_unique[0]).arg(account.value(m_unique[0]).toString()).arg(m_unique[1]).arg(account.value(m_unique[1]).toString());
+    }
+
+    return whereClause;
+}
+
+/**
+ * Get a list of Account object from a database query.
+ * @param query
+ * @return
+ */
+QList<Account> Persistence::getAccountList(QSqlQuery &query)
+{
+    QList<Account> list;
+    QStringList columnList;
+    for (int i=0; i<query.record().count(); ++i) {
+        columnList << query.record().fieldName(i);
+    }
+    while (query.next()) {
+        Account account;
+        for (QString column : columnList) {
+            QVariant value = query.value(column);
+            m_columnWidth.insertWidthValue(column, value);
+            account.insert(column, value);
+        }
+        list << account;
+    }
+
+    return list;
 }

@@ -31,7 +31,7 @@ void ConsoleInterface::printSingleAccount(const Account &account)
     for (QString key : keyList) {
         QVariant valueVariant = account.value(key);
         QString value = valueVariant.toString();
-        columnWidth.widthValue(key, value.length());
+        columnWidth.insertWidthValue(key, value.length());
     }
     printTableHeader(account, columnWidth);
     printAccount(account, columnWidth);
@@ -59,6 +59,24 @@ void ConsoleInterface::printSuccessMsg(const QString &message)
 {
     QString msg = QString(message).prepend(m_colorGreen).append(m_colorStandard);
     outStream << msg;
+}
+
+/**
+ * Print a list of Account objects to console
+ * including a header.
+ * @param accountList
+ * @param columnWidth
+ */
+void ConsoleInterface::printAccountList(const QList<Account> &accountList, const ColumnWidth &columnWidth)
+{
+    if (accountList.isEmpty()) {
+        outStream << 'n';
+        return;
+    }
+    printTableHeader(accountList[0], columnWidth);
+    for (Account account : accountList) {
+        printAccount(account, columnWidth);
+    }
 }
 
 /**

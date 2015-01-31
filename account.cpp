@@ -21,7 +21,7 @@ void Account::insertWithOption(const char option, const QVariant &value)
  * @param option
  * @return
  */
-QVariant Account::valueWithOption(const char option)
+QVariant Account::valueWithOption(const QChar &option)
 {
     QString key = databaseNameOfOption(option);
 
@@ -33,9 +33,9 @@ QVariant Account::valueWithOption(const char option)
  * @param option
  * @return
  */
-QString Account::databaseNameOfOption(const char option)
+QString Account::databaseNameOfOption(const QChar &option)
 {
-    switch (option) {
+    switch (option.toLatin1()) {
     case 'p':
         return "provider";
         break;

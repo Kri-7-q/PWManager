@@ -9,10 +9,10 @@ public:
     Account();
 
     void insertWithOption(const char option, const QVariant &value);
-    QVariant valueWithOption(const char option);
+    QVariant valueWithOption(const QChar &option);
 
     // Static methods
-    static QString databaseNameOfOption(const char option);
+    static QString databaseNameOfOption(const QChar &option);
 };
 
 #endif // ACCOUNT_H

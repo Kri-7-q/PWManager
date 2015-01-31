@@ -16,7 +16,7 @@ ColumnWidth::ColumnWidth()
  * @param column        The database column names.
  * @param width
  */
-void ColumnWidth::widthValue(const QString &column, const int width)
+void ColumnWidth::insertWidthValue(const QString &column, const int width)
 {
     int minWidth = 1;
     if (column.length() > width) {
@@ -28,6 +28,20 @@ void ColumnWidth::widthValue(const QString &column, const int width)
     if (currentWidth < minWidth) {
         m_widthTable.insert(column, minWidth);
     }
+}
+
+/**
+ * OVERLOAD
+ * Takes a QVariant value and converts it to a string.
+ * String length is inserted to the hashtable.
+ * @param column
+ * @param value
+ */
+void ColumnWidth::insertWidthValue(const QString &column, const QVariant &value)
+{
+    QString text = value.toString();
+    int width = text.length();
+    insertWidthValue(column, width);
 }
 
 /**

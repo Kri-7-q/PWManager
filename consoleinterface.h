@@ -15,6 +15,7 @@ public:
     void printSingleAccount(const Account &account);
     void printHelp(const QStringList &help);
     void printSuccessMsg(const QString &message);
+    void printAccountList(const QList<Account> &accountList, const ColumnWidth &columnWidth);
 
 private:
     QTextStream outStream;
