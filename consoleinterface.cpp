@@ -80,6 +80,27 @@ void ConsoleInterface::printAccountList(const QList<Account> &accountList, const
 }
 
 /**
+ * Print parsed options.
+ * @param optionTable
+ */
+void ConsoleInterface::printOptionTable(const QHash<QString, QString> optionTable, const int columnWidth)
+{
+    QString space;
+    QStringList keyList = optionTable.keys();
+    outStream << '\n';
+    for (QString key : keyList) {
+        int needSpace = columnWidth - key.length();
+        if (needSpace > 0) {
+            space = QString(needSpace, ' ');
+        } else {
+            space = "";
+        }
+        outStream << key << space << " : " << optionTable.value(key) << '\n';
+    }
+    outStream << '\n';
+}
+
+/**
  * Get the print order of columns.
  * The option character are translated to column names.
  * Those column names will be stored in a list and in

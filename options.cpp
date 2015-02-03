@@ -30,21 +30,47 @@ Options::~Options()
 QHash<QString, QString> Options::parseOptions(const int argc, const char * const *argv, const int start)
 {
     QHash<QString, QString> optionTable;
+    QString lastOption;
     for (int index=start; index<argc; ++index) {
+        qDebug() << "Index : " << index;
         QString parameter(argv[index]);
+        qDebug() << "Parameter : " << parameter << "\tIndex : " << index;
         if (parameter.startsWith("--")) {
             // long option
-            bool isOption = parseLongOption(parameter, optionTable);
+            parameter.remove(0, 2);
+            bool isOption = parseLongOption(parameter, optionTable, lastOption);
             if (! isOption) {
                 return optionTable;
             }
+            continue;
         }
-        else if (parameter.startsWith('-')) {
-
+        if (parameter.startsWith('-')) {
+            // single option
+            parameter.remove(0, 1);
+            qDebug() << "without '-' : " << parameter;
+            bool isMultiOption = isMultiOptionSet(parameter);
+            if (isMultiOption) {
+                lastOption = setMultiOption(parameter, optionTable);
+            } else {
+                lastOption = "";
+                if (! setOptionAndValue(parameter, optionTable)) {
+                    return optionTable;
+                }
+            }
+            continue;
+        }
+        // Is value
+        bool lastOptionTakeValue = m_validOptionTable.value(lastOption, false);
+        bool hasNoValue = optionTable.value(lastOption, QString()).isNull();
+        if (lastOptionTakeValue && hasNoValue) {
+            optionTable.insert(lastOption, parameter);
         } else {
-
+            m_hasError = true;
+            // Error message ?????????????found value without option???????????????
         }
     }
+
+    return optionTable;
 }
 
 /**
@@ -77,26 +103,86 @@ QHash<QString, bool> Options::validOptionTable(const QString &validOptions)
  * @param optionTable
  * @return                  True if option and value are valid.
  */
-bool Options::parseLongOption(QString &parameter, QHash<QString, QString> &optionTable)
+bool Options::parseLongOption(const QString &parameter, QHash<QString, QString> &optionTable, QString &lastOption)
 {
-    parameter.remove(0, 2);
-    int index = parameter.indexOf('=');
-    QString option(parameter), value;
-    if (index > 0) {
-        QStringList list = parameter.split('=');
-        option = list[0];
-        value = list[1];
-        if (! m_validOptionTable.value(option)) {
+    QStringList paramList = parameter.split('=');
+    if (!m_validOptionTable.contains(paramList[0])) {
+        m_hasError = true;
+        // Error message ??????????????wrong option??????????????????????????
+        return false;
+    }
+    if (paramList.size() > 1) {
+        optionTable.insert(paramList[0], paramList[1]);
+        if (! m_validOptionTable.value(paramList[0], false)) {
             m_hasError = true;
-            // Error message ???????????does not take a value???????????????????
+            // Error message ????????????option does not take a value???????????????
+        }
+    } else {
+        optionTable.insert(paramList[0], QString());
+    }
+    lastOption = paramList[0];
+
+    return true;
+}
+
+/**
+ * Checks if parameter contains a multi option set.
+ * @param parameter
+ * @return              True if all character are options.
+ */
+bool Options::isMultiOptionSet(const QString &parameter) const
+{
+    for (int index=0; index<parameter.length(); ++index) {
+        QString option = parameter.mid(index, 1);
+        if (! m_validOptionTable.contains(option)) {
+            return false;
         }
     }
-    if (m_validOptionTable.contains(option)) {
-        optionTable.insert(option, value);
-        return true;
-    }
-    m_hasError = true;
-    // Error message ????????????????is not a valid option??????????????
 
-    return false;
+    return true;
+}
+
+/**
+ * Takes a string with multi option set.
+ * Those options are inserted to hash table.
+ * @param parameter
+ * @param optionTable       Found options and values.
+ * @return option           The last option in parameter string.
+ */
+QString Options::setMultiOption(const QString &parameter, QHash<QString, QString> &optionTable)
+{
+    QString option;
+    for (int index=0; index<parameter.length(); ++index) {
+        option = parameter.mid(index, 1);
+        qDebug() << "Single option : " << option << "\tIndex : " << index;
+        optionTable.insert(option, QString());
+    }
+    qDebug() << "Parameter length : " << parameter.length();
+
+    return option;
+}
+
+/**
+ * Splits the option charackter from the value.
+ * Inserts if valid the option and its value.
+ * @param parameter
+ * @param optionTable
+ * @return
+ */
+bool Options::setOptionAndValue(const QString &parameter, QHash<QString, QString> &optionTable)
+{
+    QString option = parameter.left(1);
+    if (! m_validOptionTable.contains(option)) {
+        m_hasError = true;
+        // Error message ???????????is not a valid option????????????
+        return false;
+    }
+    if (! m_validOptionTable.value(option)) {
+        m_hasError = true;
+        // Error mesage ????????????option does not take a value?????????
+    }
+    QString value = parameter.mid(1);
+    optionTable.insert(option, value);
+
+    return true;
 }

@@ -3,6 +3,7 @@
 
 #include <QStringList>
 #include <QHash>
+#include <QDebug>
 
 class Options
 {
@@ -19,7 +20,10 @@ private:
 
     // Methods
     QHash<QString, bool> validOptionTable(const QString &validOptions);
-    bool parseLongOption(QString &parameter, QHash<QString, QString> &optionTable);
+    bool parseLongOption(const QString &parameter, QHash<QString, QString> &optionTable, QString &lastOption);
+    bool isMultiOptionSet(const QString &parameter) const;
+    QString setMultiOption(const QString &parameter, QHash<QString, QString> &optionTable);
+    bool setOptionAndValue(const QString &parameter, QHash<QString, QString> &optionTable);
 };
 
 #endif // OPTIONS_H

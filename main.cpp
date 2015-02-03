@@ -21,6 +21,9 @@ int main(int argc, char *argv[])
 
     // Get options from command line input.
     Options options(appCommand.commandsOptions());
+    QHash<QString, QString> table = options.parseOptions(argc, argv, 2);
+    userInterface.printOptionTable(table, 10);
+    return 1;
 
     Account account;
     // User needs help?
