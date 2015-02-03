@@ -5,7 +5,8 @@
  * @param validOptions      A string with valid options.
  */
 Options::Options(const QString &validOptions) :
-    m_hasError(false)
+    m_hasError(false),
+    m_optionSeparater(' ')
 {
     m_validOptionTable = validOptionTable(validOptions);
 }
@@ -73,6 +74,26 @@ QHash<QString, QString> Options::parseOptions(const int argc, const char * const
     return optionTable;
 }
 
+// Getter
+QChar Options::optionSeparater() const
+{
+    return m_optionSeparater;
+}
+/**
+ * SETTER
+ * The separater character must not be a colon.
+ * The default sparater is '|'.
+ * @param optionSeparater
+ */
+void Options::setOptionSeparater(const QChar &optionSeparater)
+{
+    if (optionSeparater == ':') {
+        return;
+    }
+    m_optionSeparater = optionSeparater;
+}
+
+
 /**
  * Takes a string which contains all valid options.
  * Options are separated with '|'. Option name is followed
@@ -83,7 +104,7 @@ QHash<QString, QString> Options::parseOptions(const int argc, const char * const
 QHash<QString, bool> Options::validOptionTable(const QString &validOptions)
 {
     QHash<QString, bool> table;
-    QStringList optionList = validOptions.split('|');
+    QStringList optionList = validOptions.split(m_optionSeparater);
     for (QString option : optionList) {
         bool hasValue = option.endsWith(':');
         if (hasValue) {

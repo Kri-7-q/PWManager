@@ -13,10 +13,13 @@ public:
 
     bool hasError() const                   { return m_hasError; }
     QHash<QString, QString> parseOptions(const int argc, const char* const *argv, const int start);
+    QChar optionSeparater() const;
+    void setOptionSeparater(const QChar &optionSeparater);
 
 private:
     QHash<QString, bool> m_validOptionTable;
     bool m_hasError;
+    QChar m_optionSeparater;
 
     // Methods
     QHash<QString, bool> validOptionTable(const QString &validOptions);

@@ -26,18 +26,20 @@ QString AppCommand::commandsOptions()
 {
     switch (m_command) {
     case New:
-        return "p:|u:|k:|l:|s:|q:|answer:|help";
+        return "p: u: k: l: s: q: answer: help";
     case GeneratePW:
-        return "i:|u:|p:|l:|s:|help";
+        return "i: u: p: l: s: help";
     case Show:
-        return "i:|p:|u:|all|a|k|l|s|q|answer|t|help";
+        return "i: p: u: all a k l s q answer t help";
     case Modify:
-        return "i:|p:|u:|k:|l:|s:|q:|answer:|help";
+        return "i: p: u: k: l: s: q: answer: help";
     case Remove:
-        return "i:|p:|u:";
+        return "i: p: u:";
     default:
         break;
     }
+
+    return QString();
 }
 
 /**
