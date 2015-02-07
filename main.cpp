@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QDateTime>
 
+typedef QHash<QString, QVariant> Account;
 
 int main(int argc, char *argv[])
 {
@@ -21,52 +22,43 @@ int main(int argc, char *argv[])
 
     // Get options from command line input.
     Options options(appCommand.commandsOptions());
-    QHash<QString, QString> table = options.parseOptions(argc, argv, 2);
-    userInterface.printOptionTable(table, 10);
-    return 1;
-
-    Account account;
-    // User needs help?
+    OptionTable optionTable = options.parseOptions(argc, argv, 2);
+    if (options.hasError()) {
+        userInterface.printError(options.errorMessage());
+        userInterface.printHelp(appCommand.getHelpText());
+    }
 
     // Execute command
-    qDebug() << "Get command from class Options";
-    qDebug() << "Switch command ...";
     switch (command) {
     case AppCommand::New: {
         PwGenerator pwGenerator;
-        int passwordLength = account.valueWithOption('l').toInt();
-        QString characterDefinition = account.valueWithOption('s').toString();
+        int passwordLength = optionTable.value('l').toInt();
+        QString characterDefinition = optionTable.value('s').toString();
         QString password = pwGenerator.passwordFromDefinition(passwordLength, characterDefinition);
         if (pwGenerator.hasError()) {
             userInterface.printError(pwGenerator.errorMessage());
             return -1;
         }
-        account.insertWithOption('k', QVariant(password));
-        userInterface.printSingleAccount(account);
+        optionTable.insert('k', QVariant(password));
+        userInterface.printOptionTable(optionTable);
         Persistence database;
-        account.insertWithOption('t', QVariant(QDateTime::currentDateTime()));
-        bool result = database.persistAccount(account);
-        qDebug() << "Write into database successfully : " << result;
+        optionTable.insert('t', QVariant(QDateTime::currentDateTime()));
+        bool result = database.persistAccount(optionTable);
         if (result) {
             userInterface.printSuccessMsg("Account successfully persisted.\n");
         } else {
+            userInterface.printError("Could not store new Account !");
             userInterface.printError(database.errorMessage());
         }
         break;
     }
     case AppCommand::Show: {
-        qDebug() << "Account before replace 'a' ...";
-        userInterface.printSingleAccount(account);
-        qDebug() << "Account after replace 'a' ...";
-        userInterface.printSingleAccount(account);
         Persistence database;
-        QList<Account> list = database.findAccount(account);
+        QList<Account> list = database.findAccount(optionTable);
         if (database.hasError()) {
-            qDebug() << "Database error ...";
             userInterface.printError(database.errorMessage());
             break;
         }
-        qDebug() << "Get column width table from class Database ...";
         ColumnWidth columnWidth = database.columnWidthTable();
         userInterface.printAccountList(list, columnWidth);
         break;

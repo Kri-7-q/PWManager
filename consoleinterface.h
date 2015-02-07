@@ -1,10 +1,11 @@
 #ifndef CONSOLEINTERFACE_H
 #define CONSOLEINTERFACE_H
 
-#include "account.h"
 #include "columnwidth.h"
 #include "persistence.h"
 #include <QTextStream>
+
+typedef QHash<QString, QVariant> Account;
 
 class ConsoleInterface
 {
@@ -16,7 +17,7 @@ public:
     void printHelp(const QStringList &help);
     void printSuccessMsg(const QString &message);
     void printAccountList(const QList<Account> &accountList, const ColumnWidth &columnWidth);
-    void printOptionTable(const QHash<QString, QString> optionTable, const int columnWidth);
+    void printOptionTable(const QHash<char, QVariant> optionTable);
 
 private:
     QTextStream outStream;

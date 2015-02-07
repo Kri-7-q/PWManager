@@ -1,6 +1,7 @@
 #ifndef MANAGERCOMMAND_H
 #define MANAGERCOMMAND_H
 
+#include "optiondefinition.h"
 #include <QStringList>
 
 class AppCommand
@@ -16,7 +17,7 @@ private:
 
 public:
     Command command() const                 { return m_command; }
-    QString commandsOptions();
+    QList<OptionDefinition> commandsOptions();
     QStringList getHelpText();
 
 private:

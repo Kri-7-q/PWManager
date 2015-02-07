@@ -22,24 +22,63 @@ AppCommand::~AppCommand()
  * Options seperated by a pipe symbol '|'.
  * @return
  */
-QString AppCommand::commandsOptions()
+QList<OptionDefinition> AppCommand::commandsOptions()
 {
+    QList<OptionDefinition> list;
     switch (m_command) {
     case New:
-        return "p: u: k: l: s: q: answer: help";
+        list << OptionDefinition('p', QVariant::String, QString());
+        list << OptionDefinition('u', QVariant::String, QString());
+        list << OptionDefinition('k', QVariant::String, QString());
+        list << OptionDefinition('l', QVariant::Int, QString());
+        list << OptionDefinition('s', QVariant::String, QString());
+        list << OptionDefinition('q', QVariant::String, QString());
+        list << OptionDefinition('r', QVariant::String, QString("answer"));
+        list << OptionDefinition('h', QVariant::String, QString("help"));
+        break;
     case GeneratePW:
-        return "i: u: p: l: s: help";
+        list << OptionDefinition('i', QVariant::Int, QString());
+        list << OptionDefinition('p', QVariant::String, QString());
+        list << OptionDefinition('u', QVariant::String, QString());
+        list << OptionDefinition('l', QVariant::Int, QString());
+        list << OptionDefinition('s', QVariant::String, QString());
+        list << OptionDefinition('h', QVariant::String, QString("help"));
+        break;
     case Show:
-        return "i: p: u: all a k l s q answer t help";
+        list << OptionDefinition('i', QVariant::Int, QString());
+        list << OptionDefinition('p', QVariant::String, QString());
+        list << OptionDefinition('u', QVariant::String, QString());
+        list << OptionDefinition('k', QVariant::Invalid, QString());
+        list << OptionDefinition('l', QVariant::Invalid, QString());
+        list << OptionDefinition('s', QVariant::Invalid, QString());
+        list << OptionDefinition('q', QVariant::Invalid, QString());
+        list << OptionDefinition('t', QVariant::Invalid, QString());
+        list << OptionDefinition('r', QVariant::Invalid, QString("answer"));
+        list << OptionDefinition('h', QVariant::Invalid, QString("help"));
+        list << OptionDefinition('e', QVariant::Invalid, QString("all"));
+        list << OptionDefinition('a', QVariant::Invalid, QString());
+        break;
     case Modify:
-        return "i: p: u: k: l: s: q: answer: help";
+        list << OptionDefinition('i', QVariant::Int, QString());
+        list << OptionDefinition('p', QVariant::String, QString());
+        list << OptionDefinition('u', QVariant::String, QString());
+        list << OptionDefinition('k', QVariant::Invalid, QString());
+        list << OptionDefinition('l', QVariant::Invalid, QString());
+        list << OptionDefinition('s', QVariant::Invalid, QString());
+        list << OptionDefinition('q', QVariant::Invalid, QString());
+        list << OptionDefinition('r', QVariant::Invalid, QString("answer"));
+        list << OptionDefinition('h', QVariant::Invalid, QString("help"));
+        break;
     case Remove:
-        return "i: p: u:";
+        list << OptionDefinition('i', QVariant::Int, QString());
+        list << OptionDefinition('p', QVariant::String, QString());
+        list << OptionDefinition('u', QVariant::String, QString());
+        break;
     default:
         break;
     }
 
-    return QString();
+    return list;
 }
 
 /**

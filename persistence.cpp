@@ -46,25 +46,27 @@ QString Persistence::errorMessage()
  * @param account
  * @return
  */
-bool Persistence::persistAccount(const Account &account)
+bool Persistence::persistAccount(const OptionTable &optionTable)
 {
     QSqlDatabase db = QSqlDatabase::database("local");
     if (! db.open()) {
         return false;
     }
-    QStringList columnNameList = columnNames(db, m_tableName);
-    QString columns = queryColumnString(columnNameList, account);
-    QString bindStrings = queryColumnString(columnNameList, account, true);
-    QString queryString = QString("INSERT INTO %1 (%2) VALUES(%3)").arg(m_tableName).arg(columns).arg(bindStrings);
+    QList<char> optionList = optionTable.keys();
+    QStringList columnList = optionToDatabaseNames(optionList);
+    QString queryColumns = queryColumnString(columnList);
+    QString placeholder = sqlPlaceholderString(columnList.size());
+    QString queryString = QString("INSERT INTO %1 (%2) VALUES(%3)").arg(m_tableName).arg(queryColumns).arg(placeholder);
+    qDebug() << "SQL : " << queryString;
     QSqlQuery query(db);
     query.prepare(queryString);
-    QStringList columnList = account.keys();
-    for (QString column : columnList) {
-        QVariant value = account.value(column);
-        column.prepend(':');
-        query.bindValue(column, value);
+    for (char option : optionList) {
+        QVariant value = optionTable.value(option);
+        qDebug() << "Value : " << option << " ---> " << value;
+        query.addBindValue(value);
     }
     bool result = query.exec();
+    query.finish();
     db.close();
 
     return result;
@@ -79,17 +81,16 @@ bool Persistence::persistAccount(const Account &account)
  * @param account
  * @return
  */
-QList<Account> Persistence::findAccount(const Account &account)
+QList<Account> Persistence::findAccount(const OptionTable &optionTable)
 {
     QSqlDatabase db = QSqlDatabase::database("local");
-    qDebug() << "DB : " << db;
     if (! db.open()) {
         m_hasError = true;
         return QList<Account>();
     }
-    QStringList columnNameList = columnNames(db, m_tableName);
-    QString queryColumns = queryColumnString(columnNameList, account);
-    QString queryWhereClause = sqlWhereClauseFind(account);
+    QStringList columnList = optionToDatabaseNames(optionTable.keys());
+    QString queryColumns = queryColumnString(columnList);
+    QString queryWhereClause = sqlWhereClauseFind(optionTable);
     QString querySQL = QString("SELECT %1 FROM %2%3").arg(queryColumns).arg(m_tableName).arg(queryWhereClause);
     qDebug() << "Query String : " << querySQL;
     QSqlQuery query = db.exec(querySQL);
@@ -107,13 +108,10 @@ QList<Account> Persistence::findAccount(const Account &account)
  * @param bindStrings
  * @return
  */
-QString Persistence::queryColumnString(const QStringList columnNameList, const Account &account, const bool bindStrings)
+QString Persistence::queryColumnString(const QStringList &columnsToQuery, const bool bindStrings)
 {
     QString queryString;
-    for (QString column : columnNameList) {
-        if (! account.contains(column)) {
-            continue;
-        }
+    for (QString column : columnsToQuery) {
         if (bindStrings) {
             column.prepend(':');
         }
@@ -145,19 +143,24 @@ QStringList Persistence::columnNames(QSqlDatabase &db, const QString &table)
  * @param account
  * @return
  */
-QString Persistence::sqlWhereClauseFind(const Account &account)
+QString Persistence::sqlWhereClauseFind(const OptionTable &optionTable)
 {
-    if (account.contains("e")) {
+    if (optionTable.contains('e')) {
         return QString();
     }
-    QString whereClause;
-    QVariant primaryKeyValue = account.value(m_primaryKey, QVariant());
-    if (! primaryKeyValue.isNull()) {
-        whereClause  = QString(" WHERE %1=%2");
-        whereClause.arg(m_primaryKey).arg(primaryKeyValue.toInt());
-    } else {
-        whereClause = QString(" WHERE %1=%2 AND %3=%4");
-        whereClause.arg(m_unique[0]).arg(account.value(m_unique[0]).toString()).arg(m_unique[1]).arg(account.value(m_unique[1]).toString());
+    QString whereClause(" WHERE ");
+    QList<char> keyList = optionTable.keys();
+    for (char option : keyList) {
+        QVariant value = optionTable.value(option);
+        if (! value.isNull()) {
+            QString column = databaseNameOfOption(option);
+            QString valueString = sqlStringOfValue(value);
+            QString condition = column + "=" + valueString;
+            whereClause.append(condition);
+        }
+    }
+    if (whereClause.endsWith("AND ")) {
+        whereClause.remove(whereClause.length()-4, 4);
     }
 
     return whereClause;
@@ -186,4 +189,106 @@ QList<Account> Persistence::getAccountList(QSqlQuery &query)
     }
 
     return list;
+}
+
+/**
+ * Translates option char into database column name string.
+ * @param optionList
+ * @return
+ */
+QStringList Persistence::optionToDatabaseNames(QList<char> optionList)
+{
+    QStringList columnNames;
+    int index = 0;
+    while (index < optionList.size()) {
+        char option = optionList[index];
+        QString column = databaseNameOfOption(option);
+        if (column.isNull()) {
+            optionList.removeAt(index);
+        } else {
+            columnNames << column;
+            ++index;
+        }
+    }
+
+    return columnNames;
+}
+
+/**
+ * Get a string value of a QVariant. For SQL query it
+ * is neccassary to sourround strings with quations (').
+ * @param value
+ * @return
+ */
+QString Persistence::sqlStringOfValue(const QVariant &value)
+{
+    switch (value.type()) {
+    case QVariant::Int:
+    case QVariant::Double:
+    case QVariant::LongLong:
+        return value.toString();
+        break;
+    case QVariant::String:
+    case QVariant::Char:
+    case QVariant::Date:
+    case QVariant::DateTime:
+    case QVariant::Time:
+        return QString("'").append(value.toString()).append("'");
+    default:
+        break;
+    }
+
+    return QString(value.toString());
+}
+
+/**
+ * Creates a string with SQL placeholders '?'.
+ * @param columnCount
+ * @return
+ */
+QString Persistence::sqlPlaceholderString(const int columnCount)
+{
+    qDebug() << "Placeholder count : " << columnCount;
+    if (columnCount < 1) {
+        return QString();
+    }
+    QString placeholder("?");
+    for (int i=1; i<columnCount; ++i) {
+        placeholder.append(",?");
+    }
+
+    return placeholder;
+}
+
+/**
+ * Translates an option char to database name.
+ * @param option
+ * @return
+ */
+QString Persistence::databaseNameOfOption(const char option)
+{
+    switch (option) {
+    case 'p':
+        return "provider";
+    case 'u':
+        return "username";
+    case 'i':
+        return "id";
+    case 'q':
+        return "qustion";
+    case 'r':
+        return "answer";
+    case 'l':
+        return "passwordlength";
+    case 's':
+        return "definedcharacter";
+    case 'k':
+        return "password";
+    case 't':
+        return "lastmodify";
+    default:
+        break;
+    }
+
+    return QString();
 }

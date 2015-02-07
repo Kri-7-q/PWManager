@@ -83,21 +83,16 @@ void ConsoleInterface::printAccountList(const QList<Account> &accountList, const
  * Print parsed options.
  * @param optionTable
  */
-void ConsoleInterface::printOptionTable(const QHash<QString, QString> optionTable, const int columnWidth)
+void ConsoleInterface::printOptionTable(const QHash<char, QVariant> optionTable)
 {
-    QString space;
-    QStringList keyList = optionTable.keys();
-    outStream << '\n';
-    for (QString key : keyList) {
-        int needSpace = columnWidth - key.length();
-        if (needSpace > 0) {
-            space = QString(needSpace, ' ');
-        } else {
-            space = "";
-        }
-        outStream << key << space << " : " << optionTable.value(key) << '\n';
+    Account account;
+    QList<char> keyList = optionTable.keys();
+    for (char key : keyList) {
+        QString keyName = Persistence::databaseNameOfOption(key);
+        QVariant value = optionTable.value(key);
+        account.insert(keyName, value);
     }
-    outStream << '\n';
+    printSingleAccount(account);
 }
 
 /**
@@ -110,10 +105,11 @@ void ConsoleInterface::printOptionTable(const QHash<QString, QString> optionTabl
 QStringList ConsoleInterface::getPrintOrderForColumns()
 {
     QStringList columnList;
-    int length = strlen(printOrder);
-    for (int i=0; i<length; ++i) {
-        QString column = Account::databaseNameOfOption(printOrder[i]);
-        columnList << column;
+    int index = 0;
+    while (printOrder[index] != 0) {
+        QString columnName = Persistence::databaseNameOfOption(printOrder[index]);
+        columnList << columnName;
+        ++index;
     }
 
     return columnList;

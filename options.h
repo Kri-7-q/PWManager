@@ -1,32 +1,39 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
+#include "optiondefinition.h"
 #include <QStringList>
 #include <QHash>
 #include <QDebug>
 
+typedef QHash<char, QVariant> OptionTable;
+
 class Options
 {
 public:
-    Options(const QString &validOptions);
+    Options(const QList<OptionDefinition> &validOptions);
     ~Options();
 
     bool hasError() const                   { return m_hasError; }
-    QHash<QString, QString> parseOptions(const int argc, const char* const *argv, const int start);
+    QString errorMessage() const            { return m_errorMsg; }
+    OptionTable parseOptions(const int argc, const char* const *argv, const int start);
     QChar optionSeparater() const;
     void setOptionSeparater(const QChar &optionSeparater);
 
 private:
-    QHash<QString, bool> m_validOptionTable;
+    QHash<char, QVariant::Type> m_validOption;
+    QHash<QString, char> m_validLongOption;
     bool m_hasError;
+    QString m_errorMsg;
     QChar m_optionSeparater;
 
     // Methods
-    QHash<QString, bool> validOptionTable(const QString &validOptions);
-    bool parseLongOption(const QString &parameter, QHash<QString, QString> &optionTable, QString &lastOption);
-    bool isMultiOptionSet(const QString &parameter) const;
-    QString setMultiOption(const QString &parameter, QHash<QString, QString> &optionTable);
-    bool setOptionAndValue(const QString &parameter, QHash<QString, QString> &optionTable);
+    void setValidOptions(const QList<OptionDefinition> &validOptions);
+    bool parseLongOption(const QString &parameter, OptionTable &optionTable, char &lastOption);
+    bool isMultiOptionSet(const char *parameter) const;
+    char setMultiOption(const char *parameter, OptionTable &optionTable);
+    bool setOptionAndValue(const char *parameter, OptionTable &optionTable);
+    QVariant valueWithType(const QVariant::Type type, const QString value) const ;
 };
 
 #endif // OPTIONS_H
