@@ -5,8 +5,7 @@
  * @param validOptions      A string with valid options.
  */
 Options::Options(const QList<OptionDefinition> &validOptions) :
-    m_hasError(false),
-    m_optionSeparater(' ')
+    m_hasError(false)
 {
     setValidOptions(validOptions);
 }
@@ -70,26 +69,6 @@ OptionTable Options::parseOptions(const int argc, const char * const *argv, cons
     return optionTable;
 }
 
-// Getter
-QChar Options::optionSeparater() const
-{
-    return m_optionSeparater;
-}
-/**
- * SETTER
- * The separater character must not be a colon.
- * The default sparater is '|'.
- * @param optionSeparater
- */
-void Options::setOptionSeparater(const QChar &optionSeparater)
-{
-    if (optionSeparater == ':') {
-        return;
-    }
-    m_optionSeparater = optionSeparater;
-}
-
-
 /**
  * Takes a list with option definitions.
  * Sets option information to Hashtables.
@@ -118,7 +97,7 @@ bool Options::parseLongOption(const QString &parameter, OptionTable &optionTable
     QStringList paramList = parameter.split('=');
     if (!m_validLongOption.contains(paramList[0])) {
         m_hasError = true;
-        m_errorMsg.append("Not a known optiond : " + paramList[0] + "\n");
+        m_errorMsg.append("Not a known option : " + paramList[0] + "\n");
         return false;
     }
     char option = m_validLongOption.value(paramList[0]);
@@ -187,12 +166,12 @@ bool Options::setOptionAndValue(const char *parameter, OptionTable &optionTable)
     char option = parameter[1];
     if (! m_validOption.contains(option)) {
         m_hasError = true;
-        m_errorMsg.append("Not a known option : %1\n").arg(option);
+        m_errorMsg.append(QString("Not a known option : %1\n").arg(option));
         return false;
     }
     if (m_validOption.value(option, QVariant::Invalid) == QVariant::Invalid) {
         m_hasError = true;
-        m_errorMsg.append("Option '%1' does not take a value.\n").arg(option);
+        m_errorMsg.append(QString("Option '%1' does not take a value.\n").arg(option));
     }
     QString valueString = QString(parameter).mid(2);
     QVariant value = valueWithType(m_validOption.value(option, QVariant::Invalid), valueString);

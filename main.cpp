@@ -26,6 +26,13 @@ int main(int argc, char *argv[])
     if (options.hasError()) {
         userInterface.printError(options.errorMessage());
         userInterface.printHelp(appCommand.getHelpText());
+        return 1;
+    }
+
+    // Need help?
+    if (optionTable.contains('h')) {
+        userInterface.printHelp(appCommand.getHelpText());
+        return 1;
     }
 
     // Execute command
@@ -61,6 +68,28 @@ int main(int argc, char *argv[])
         }
         ColumnWidth columnWidth = database.columnWidthTable();
         userInterface.printAccountList(list, columnWidth);
+        break;
+    }
+    case AppCommand::Remove: {
+        Persistence database;
+        int rowsRemoved = database.deleteAccount(optionTable);
+        if (database.hasError()) {
+            userInterface.printError(database.errorMessage());
+        } else {
+            QString msg = QString("%1 accounts removed from database.\n").arg(rowsRemoved);
+            userInterface.printSuccessMsg(msg);
+        }
+        break;
+    }
+    case AppCommand::Modify: {
+        Persistence database;
+        optionTable.insert('t', QDateTime::currentDateTime());
+        if (database.modifyAccount(optionTable)) {
+            userInterface.printSuccessMsg("Account object successfully updated.\n");
+        } else {
+            userInterface.printError("Account could not be updated !\n");
+            userInterface.printError(database.errorMessage());
+        }
         break;
     }
     default:

@@ -62,17 +62,18 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('i', QVariant::Int, QString());
         list << OptionDefinition('p', QVariant::String, QString());
         list << OptionDefinition('u', QVariant::String, QString());
-        list << OptionDefinition('k', QVariant::Invalid, QString());
-        list << OptionDefinition('l', QVariant::Invalid, QString());
-        list << OptionDefinition('s', QVariant::Invalid, QString());
-        list << OptionDefinition('q', QVariant::Invalid, QString());
-        list << OptionDefinition('r', QVariant::Invalid, QString("answer"));
+        list << OptionDefinition('k', QVariant::String, QString());
+        list << OptionDefinition('l', QVariant::Int, QString());
+        list << OptionDefinition('s', QVariant::String, QString());
+        list << OptionDefinition('q', QVariant::String, QString());
+        list << OptionDefinition('r', QVariant::String, QString("answer"));
         list << OptionDefinition('h', QVariant::Invalid, QString("help"));
         break;
     case Remove:
         list << OptionDefinition('i', QVariant::Int, QString());
         list << OptionDefinition('p', QVariant::String, QString());
         list << OptionDefinition('u', QVariant::String, QString());
+        list << OptionDefinition('h', QVariant::Invalid, QString("help"));
         break;
     default:
         break;

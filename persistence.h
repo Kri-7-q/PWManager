@@ -21,6 +21,8 @@ public:
     QString errorMessage();
     bool persistAccount(const OptionTable &optionTable);
     QList<Account> findAccount(const OptionTable &optionTable);
+    int deleteAccount(const OptionTable &optionTable);
+    bool modifyAccount(const OptionTable &optionTable);
     ColumnWidth columnWidthTable() const                   { return m_columnWidth; }
     bool hasError() const                                   { return m_hasError; }
 
@@ -33,13 +35,15 @@ private:
     bool m_hasError;
 
     // Methods
-    QString queryColumnString(const QStringList &columnsToQuery, const bool bindStrings = false);
-    QStringList columnNames(QSqlDatabase &db, const QString &table);
+    QString sqlQueryColumns(const QStringList &columnsToQuery);
+    QStringList tableColumnNames(QSqlDatabase &db, const QString &table);
     QString sqlWhereClauseFind(const OptionTable &optionTable);
+    QString sqlWhereIdentify(const OptionTable &optionTable, QList<char> &optionList);
     QList<Account> getAccountList(QSqlQuery &query);
     QStringList optionToDatabaseNames(QList<char> optionList);
     QString sqlStringOfValue(const QVariant &value);
     QString sqlPlaceholderString(const int columnCount);
+    QString sqlUpdateTouple(const OptionTable &optionTable, QList<char> optionList);
 
 public:
     //Static
