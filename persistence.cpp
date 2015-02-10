@@ -90,10 +90,18 @@ QList<Account> Persistence::findAccount(const OptionTable &optionTable)
     }
     QStringList columnList = optionToDatabaseNames(optionTable.keys());
     QString queryColumns = sqlQueryColumns(columnList);
-    QString queryWhereClause = sqlWhereClauseFind(optionTable);
+    QList<char> valuesToBind;
+    QString queryWhereClause = sqlWhereClauseFind(optionTable, valuesToBind);
     QString querySQL = QString("SELECT %1 FROM %2%3").arg(queryColumns).arg(m_tableName).arg(queryWhereClause);
     qDebug() << "Query String : " << querySQL;
-    QSqlQuery query = db.exec(querySQL);
+    QSqlQuery query(db);
+    query.prepare(querySQL);
+    for (char option : valuesToBind) {
+        QVariant value = optionTable.value(option);
+        QString bindString = sqlBindingString(option);
+        query.bindValue(bindString, value);
+    }
+    query.exec();
     QList<Account> accountList = getAccountList(query);
     db.close();
 
@@ -117,10 +125,18 @@ int Persistence::deleteAccount(const OptionTable &optionTable)
         return -1;
     }
     QString querySQL = QString("DELETE FROM %1").arg(m_tableName);
-    QString queryWhereClause = sqlWhereClauseFind(optionTable);
+    QList<char> valuesToBind;
+    QString queryWhereClause = sqlWhereClauseFind(optionTable, valuesToBind);
     querySQL.append(queryWhereClause);
     qDebug() << "SQL : " << querySQL;
-    QSqlQuery query = db.exec(querySQL);
+    QSqlQuery query(db);
+    query.prepare(querySQL);
+    for (char option : valuesToBind) {
+        QVariant value = optionTable.value(option);
+        QString bindString = sqlBindingString(option);
+        query.bindValue(bindString, value);
+    }
+    query.exec();
     int numRowsAffected = query.numRowsAffected();
     db.close();
 
@@ -196,7 +212,7 @@ QStringList Persistence::tableColumnNames(QSqlDatabase &db, const QString &table
  * @param account
  * @return
  */
-QString Persistence::sqlWhereClauseFind(const OptionTable &optionTable)
+QString Persistence::sqlWhereClauseFind(const OptionTable &optionTable, QList<char> &toBind)
 {
     if (optionTable.contains('e')) {
         return QString();
@@ -208,8 +224,9 @@ QString Persistence::sqlWhereClauseFind(const OptionTable &optionTable)
         QVariant value = optionTable.value(option);
         if (! value.isNull()) {
             QString column = databaseNameOfOption(option);
-            QString valueString = sqlStringOfValue(value);
-            QString condition = column + "=" + valueString;
+            QString bindString = sqlBindingString(option);
+            QString condition = column + "=" + bindString;
+            toBind << option;
             whereClause.append(condition);
             hasCondition = true;
         }
@@ -364,6 +381,16 @@ QString Persistence::sqlUpdateTouple(const OptionTable &optionTable, QList<char>
     }
 
     return sqlUpdate;
+}
+
+/**
+ * Creates a binding string out of an option.
+ * @param option
+ * @return
+ */
+QString Persistence::sqlBindingString(const char option)
+{
+    return QString(":").append(option);
 }
 
 /**

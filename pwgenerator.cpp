@@ -5,7 +5,9 @@
  * Standard
  */
 PwGenerator::PwGenerator() :
-    m_hasError(false)
+    m_hasError(false),
+    m_standardDefinition("*[a-z]*[A-Z]*[0-9]"),
+    m_standardLength(12)
 {
 }
 
@@ -17,22 +19,32 @@ PwGenerator::PwGenerator() :
  */
 QString PwGenerator::passwordFromDefinition(const ushort passwordLength, const QString &definitionString)
 {
-    if (passwordLength < 1) {
-        setErrorMessage(QString("Password length is %1 this is to less !").arg(passwordLength));
-        return QString();
+    int pwLength = passwordLength;
+    QString pwDefinition(definitionString);
+    if (definitionString.isNull()) {
+        pwDefinition = m_standardDefinition;
     }
-    QList<CharacterDefinition> definitionList = parseCharacterDefinitionString(definitionString);
+
+    if (pwLength < 1) {
+        setErrorMessage(QString("Password length is %1 this is to less !").arg(pwLength));
+        pwLength = m_standardLength;
+    }
+    QList<CharacterDefinition> definitionList = parseCharacterDefinitionString(pwDefinition);
     if (hasError()) {
         return QString();
     }
-    definitionList = fixAmountValues(passwordLength, definitionList);
+    qDebug() << "Character definition : " << pwDefinition << "\t was parsed ...";
+    definitionList = fixAmountValues(pwLength, definitionList);
     if (hasError()) {
         return QString();
     }
+    qDebug() << "Amount of character to use in password fixed ...";
     QList<QChar> characterList;
     for (CharacterDefinition definition : definitionList) {
+        qDebug() << "Definition (amount:" << definition.amount() << ", char:" << definition.characterSet() << ")";
         characterList << randomCharacterFromDefinition(definition);
     }
+    qDebug() << "Charatcer list created ...";
     QString password;
     qsrand(QTime::currentTime().msec());
     while (! characterList.isEmpty()) {
@@ -40,6 +52,7 @@ QString PwGenerator::passwordFromDefinition(const ushort passwordLength, const Q
         QChar current = characterList.takeAt(index);
         password.append(current);
     }
+    qDebug() << "Generated password : " << password;
 
     return password;
 }
@@ -149,33 +162,31 @@ QList<CharacterDefinition> PwGenerator::parseCharacterDefinitionString(const QSt
  */
 QList<CharacterDefinition> PwGenerator::fixAmountValues(const ushort passwordLength, const QList<CharacterDefinition> &definitionList)
 {
+    qDebug() << "Fix character amount ...";
     QList<CharacterDefinition> withoutAmountList;
-    QList<CharacterDefinition> hasAmountList;
-    ushort definedAmount = 0;
-    for (CharacterDefinition definition : definitionList) {
-        if (definition.hasNoAmount()) {
-            withoutAmountList << definition;
-        } else {
-            definedAmount += definition.amount();
-            hasAmountList << definition;
-        }
-    }
+    QList<CharacterDefinition> hasAmountList(definitionList);
+    int definedAmount = separarteCharacterAmountDefined(hasAmountList, withoutAmountList);
     if (definedAmount > passwordLength) {
         setErrorMessage(QString("%1 character are defined but length of password is %2 !").arg(definedAmount).arg(passwordLength));
     }
+    qDebug() << "Separarted defined and undefined ...";
     if (withoutAmountList.isEmpty()) {
+        qDebug() << "Has undefined ...";
+        if (definedAmount < passwordLength) {
+            qDebug() << "Password length is more than definition ...";
+            // Definition of password character is less the password length.
+            ushort addAmount = (passwordLength - definedAmount) / hasAmountList.size();
+            ushort rest = (passwordLength - definedAmount) % hasAmountList.size();
+            fillDefinitionToPasswordLength(hasAmountList, addAmount, rest);
+        }
         return hasAmountList;
     }
+    qDebug() << "Calculate amount to add ...";
     ushort calulatedAmount = (passwordLength - definedAmount) / withoutAmountList.size();
     ushort rest = (passwordLength - definedAmount) % withoutAmountList.size();
-    for (CharacterDefinition &definition : withoutAmountList) {
-        if (rest > 0) {
-            definition.setAmount(calulatedAmount + 1);
-            --rest;
-        } else {
-            definition.setAmount(calulatedAmount);
-        }
-    }
+    qDebug() << "Calculated : " << calulatedAmount << "\trest : " << rest;
+    fillDefinitionToPasswordLength(withoutAmountList, calulatedAmount, rest);
+
     hasAmountList << withoutAmountList;
 
     return hasAmountList;
@@ -203,4 +214,59 @@ void PwGenerator::setErrorMessage(const QString &message)
 {
     m_hasError = true;
     m_errorMessage = message;
+}
+
+/**
+ * Takes a list with CharacterDefinition objects and separartes
+ * them. There are some with a set of character but not defined
+ * how many of those character should be used in password. These
+ * objects are moved to the undefined list.
+ * The method counts the total amount of characters to use in
+ * password which are defined.
+ * @param definitionList
+ * @param undefinedList
+ * @return definedAmount        How many characters are defined in definition objects.
+ */
+int PwGenerator::separarteCharacterAmountDefined(QList<CharacterDefinition> &definitionList, QList<CharacterDefinition> &undefinedList)
+{
+    ushort definedAmount = 0;
+    int index = 0;
+    while (index < definitionList.size()) {
+        CharacterDefinition definition = definitionList[index];
+        if (definition.hasNoAmount()) {
+            definitionList.removeAt(index);
+            undefinedList << definition;
+        } else {
+            definedAmount += definition.amount();
+            ++index;
+        }
+    }
+
+    return definedAmount;
+}
+
+/**
+ * Password length is higher the defined amount of character.
+ * Fills the definition the password length.
+ * @param list
+ * @param addtoEach
+ * @param rest
+ */
+void PwGenerator::fillDefinitionToPasswordLength(QList<CharacterDefinition> &list, const ushort addtoEach, ushort rest)
+{
+    for (CharacterDefinition &definition : list) {
+        int amount;
+        if (definition.hasNoAmount()) {
+            amount = addtoEach;
+        } else {
+            amount = definition.amount() + addtoEach;
+        }
+
+        if (rest > 0) {     // Add one as long as available. Is not enough for each object.
+            definition.setAmount(amount + 1);
+            --rest;
+        } else {
+            definition.setAmount(amount);
+        }
+    }
 }

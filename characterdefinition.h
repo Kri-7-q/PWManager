@@ -19,7 +19,7 @@ public:
     unsigned short amount() const                       { return m_amount; }
     void setAmount(const ushort amount)                 { m_amount = amount; }
     QList<QChar> characterSet() const                   { return m_characterList; }
-    bool hasNoAmount() const                            { return m_amount == 0; }
+    bool hasNoAmount() const                            { return m_amount < 1; }
 };
 
 #endif // CHARACTERDEFINITION_H

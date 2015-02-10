@@ -39,8 +39,10 @@ int main(int argc, char *argv[])
     switch (command) {
     case AppCommand::New: {
         PwGenerator pwGenerator;
+        qDebug() << "Get password length and definition ...";
         int passwordLength = optionTable.value('l').toInt();
         QString characterDefinition = optionTable.value('s').toString();
+        qDebug() << "Length : " << passwordLength << "\tDefinition : " << characterDefinition << "\tIs NULL : " << characterDefinition.isNull();
         QString password = pwGenerator.passwordFromDefinition(passwordLength, characterDefinition);
         if (pwGenerator.hasError()) {
             userInterface.printError(pwGenerator.errorMessage());

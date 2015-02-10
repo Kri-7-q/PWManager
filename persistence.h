@@ -37,13 +37,14 @@ private:
     // Methods
     QString sqlQueryColumns(const QStringList &columnsToQuery);
     QStringList tableColumnNames(QSqlDatabase &db, const QString &table);
-    QString sqlWhereClauseFind(const OptionTable &optionTable);
+    QString sqlWhereClauseFind(const OptionTable &optionTable, QList<char> &toBind);
     QString sqlWhereIdentify(const OptionTable &optionTable, QList<char> &optionList);
     QList<Account> getAccountList(QSqlQuery &query);
     QStringList optionToDatabaseNames(QList<char> optionList);
     QString sqlStringOfValue(const QVariant &value);
     QString sqlPlaceholderString(const int columnCount);
     QString sqlUpdateTouple(const OptionTable &optionTable, QList<char> optionList);
+    QString sqlBindingString(const char option);
 
 public:
     //Static
