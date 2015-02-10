@@ -23,6 +23,7 @@ public:
     QList<Account> findAccount(const OptionTable &optionTable);
     int deleteAccount(const OptionTable &optionTable);
     bool modifyAccount(const OptionTable &optionTable);
+    Account passwordDefinition(const OptionTable &optionTable);
     ColumnWidth columnWidthTable() const                   { return m_columnWidth; }
     bool hasError() const                                   { return m_hasError; }
 
@@ -42,7 +43,7 @@ private:
     QList<Account> getAccountList(QSqlQuery &query);
     QStringList optionToDatabaseNames(QList<char> optionList);
     QString sqlStringOfValue(const QVariant &value);
-    QString sqlPlaceholderString(const int columnCount);
+    QString sqlPlaceholderString(const QList<char> &optionList);
     QString sqlUpdateTouple(const OptionTable &optionTable, QList<char> optionList);
     QString sqlBindingString(const char option);
 

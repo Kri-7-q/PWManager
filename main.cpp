@@ -94,6 +94,40 @@ int main(int argc, char *argv[])
         }
         break;
     }
+    case AppCommand::GeneratePW: {
+        Persistence database;
+        // Got new password definition and length?
+        if (! optionTable.contains('l') && ! optionTable.contains('s')) {
+            Account pwDefinition = database.passwordDefinition(optionTable);
+            if (pwDefinition.isEmpty()) {
+                userInterface.printError("Could not read password definition.\n");
+                return -1;
+            }
+            if (! optionTable.contains('l')) {
+                optionTable.insert('l', pwDefinition.value("length"));
+            }
+            if (! optionTable.contains('s')) {
+                optionTable.insert('s', pwDefinition.value("definition"));
+            }
+        }
+        int length = optionTable.value('l').toInt();
+        QString definition = optionTable.value('s').toString();
+        PwGenerator generator;
+        QString password = generator.passwordFromDefinition(length, definition);
+        if (generator.hasError()) {
+            userInterface.printError(generator.errorMessage());
+            return -1;
+        }
+        optionTable.insert('k', password);
+        optionTable.insert('t', QDateTime::currentDateTime());
+        if (database.modifyAccount(optionTable)) {
+            userInterface.printSuccessMsg("New password generated and stored into database.\n");
+        } else {
+            userInterface.printError("Could not store new password into database !\n");
+            userInterface.printError(database.errorMessage());
+        }
+        break;
+    }
     default:
         break;
     }
