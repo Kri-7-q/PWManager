@@ -57,12 +57,10 @@ bool Persistence::persistAccount(const OptionTable &optionTable)
     QString queryColumns = sqlQueryColumns(columnList);
     QString placeholder = sqlPlaceholderString(optionList);
     QString queryString = QString("INSERT INTO %1 (%2) VALUES(%3)").arg(m_tableName).arg(queryColumns).arg(placeholder);
-    qDebug() << "SQL : " << queryString;
     QSqlQuery query(db);
     query.prepare(queryString);
     for (char option : optionTable.keys()) {
         QVariant value = optionTable.value(option);
-        qDebug() << "Value : " << option << " ---> " << value;
         query.addBindValue(value);
     }
     bool result = query.exec();
@@ -93,7 +91,6 @@ QList<Account> Persistence::findAccount(const OptionTable &optionTable)
     QList<char> valuesToBind;
     QString queryWhereClause = sqlWhereClauseFind(optionTable, valuesToBind);
     QString querySQL = QString("SELECT %1 FROM %2%3").arg(queryColumns).arg(m_tableName).arg(queryWhereClause);
-    qDebug() << "Query String : " << querySQL;
     QSqlQuery query(db);
     query.prepare(querySQL);
     for (char option : valuesToBind) {
@@ -128,7 +125,6 @@ int Persistence::deleteAccount(const OptionTable &optionTable)
     QList<char> valuesToBind;
     QString queryWhereClause = sqlWhereClauseFind(optionTable, valuesToBind);
     querySQL.append(queryWhereClause);
-    qDebug() << "SQL : " << querySQL;
     QSqlQuery query(db);
     query.prepare(querySQL);
     for (char option : valuesToBind) {
@@ -159,13 +155,11 @@ bool Persistence::modifyAccount(const OptionTable &optionTable)
     QString whereClause = sqlWhereIdentify(optionTable, optionList);
     QString touple = sqlUpdateTouple(optionTable, optionList);
     QString querySQL = QString("UPDATE %1 SET %2").arg(m_tableName).arg(touple).append(whereClause);
-    qDebug() << "SQL : " << querySQL;
     QSqlQuery query(db);
     query.prepare(querySQL);
     for (char option : optionTable.keys()) {
         QVariant value = optionTable.value(option);
         QString bindString = sqlBindingString(option);
-        qDebug() << "Bind value : " << value << " to : " << bindString;
         query.bindValue(bindString, value);
     }
     bool result = query.exec();
@@ -192,26 +186,21 @@ Account Persistence::passwordDefinition(const OptionTable &optionTable)
     querySQL.append(whereCondition);
     QSqlQuery query(db);
     query.prepare(querySQL);
-    qDebug() << "SQL : " << querySQL;
     char *identifier = "ipu";
     for (int index=0; index<3; ++index) {
         if (optionTable.contains( identifier[index] )) {
             QVariant value = optionTable.value(identifier[index]);
             QString bindString = sqlBindingString(identifier[index]);
-            qDebug() << "Bind : " << bindString << "\tValue : " << value;
             query.bindValue(bindString, value);
         }
     }
     bool result = query.exec();
-    qDebug() << "Read definition : " << result << " ...";
     query.next();
     Account definiton;
     if (result) {
         QVariant value = query.value(0);
-        qDebug() << "Length : " << value;
         definiton.insert("length", value);
         value = query.value(1);
-        qDebug() << "Definition : " << value;
         definiton.insert("definition", value);
     }
     db.close();

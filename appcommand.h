@@ -40,7 +40,7 @@ private:
     const QString optA = "  -a              To show all of an account.\n";
     const QString optL = "  -l              Set the length of the password.\n";
     const QString optS = "  -s              Define the characters to use in password generation.\n                  for instance : 3[a-z]7{235njbccsv#+<>}6[A-Z]\n";
-    const QString optAll = "  --all -e        To show all stored accounts.\n";
+    const QString optAll = "  --all -e        To get all stored accounts.\n";
 
 };
 

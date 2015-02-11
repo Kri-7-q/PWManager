@@ -4,7 +4,6 @@
 #include "optiondefinition.h"
 #include <QStringList>
 #include <QHash>
-#include <QDebug>
 
 typedef QHash<char, QVariant> OptionTable;
 

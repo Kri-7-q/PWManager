@@ -33,18 +33,14 @@ QString PwGenerator::passwordFromDefinition(const ushort passwordLength, const Q
     if (hasError()) {
         return QString();
     }
-    qDebug() << "Character definition : " << pwDefinition << "\t was parsed ...";
     definitionList = fixAmountValues(pwLength, definitionList);
     if (hasError()) {
         return QString();
     }
-    qDebug() << "Amount of character to use in password fixed ...";
     QList<QChar> characterList;
     for (CharacterDefinition definition : definitionList) {
-        qDebug() << "Definition (amount:" << definition.amount() << ", char:" << definition.characterSet() << ")";
         characterList << randomCharacterFromDefinition(definition);
     }
-    qDebug() << "Charatcer list created ...";
     QString password;
     qsrand(QTime::currentTime().msec());
     while (! characterList.isEmpty()) {
@@ -52,7 +48,6 @@ QString PwGenerator::passwordFromDefinition(const ushort passwordLength, const Q
         QChar current = characterList.takeAt(index);
         password.append(current);
     }
-    qDebug() << "Generated password : " << password;
 
     return password;
 }
@@ -162,18 +157,14 @@ QList<CharacterDefinition> PwGenerator::parseCharacterDefinitionString(const QSt
  */
 QList<CharacterDefinition> PwGenerator::fixAmountValues(const ushort passwordLength, const QList<CharacterDefinition> &definitionList)
 {
-    qDebug() << "Fix character amount ...";
     QList<CharacterDefinition> withoutAmountList;
     QList<CharacterDefinition> hasAmountList(definitionList);
     int definedAmount = separarteCharacterAmountDefined(hasAmountList, withoutAmountList);
     if (definedAmount > passwordLength) {
         setErrorMessage(QString("%1 character are defined but length of password is %2 !").arg(definedAmount).arg(passwordLength));
     }
-    qDebug() << "Separarted defined and undefined ...";
     if (withoutAmountList.isEmpty()) {
-        qDebug() << "Has undefined ...";
         if (definedAmount < passwordLength) {
-            qDebug() << "Password length is more than definition ...";
             // Definition of password character is less the password length.
             ushort addAmount = (passwordLength - definedAmount) / hasAmountList.size();
             ushort rest = (passwordLength - definedAmount) % hasAmountList.size();
@@ -181,10 +172,8 @@ QList<CharacterDefinition> PwGenerator::fixAmountValues(const ushort passwordLen
         }
         return hasAmountList;
     }
-    qDebug() << "Calculate amount to add ...";
     ushort calulatedAmount = (passwordLength - definedAmount) / withoutAmountList.size();
     ushort rest = (passwordLength - definedAmount) % withoutAmountList.size();
-    qDebug() << "Calculated : " << calulatedAmount << "\trest : " << rest;
     fillDefinitionToPasswordLength(withoutAmountList, calulatedAmount, rest);
 
     hasAmountList << withoutAmountList;

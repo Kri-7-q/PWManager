@@ -7,7 +7,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
-#include <QDebug>
 
 typedef QHash<QString, QVariant> Account;
 typedef QHash<char, QVariant> OptionTable;

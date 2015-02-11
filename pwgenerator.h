@@ -3,7 +3,6 @@
 
 #include "characterdefinition.h"
 #include <QTime>
-#include <QDebug>
 
 class PwGenerator
 {
