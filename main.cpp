@@ -12,8 +12,15 @@ int main(int argc, char *argv[])
 {
     ConsoleInterface userInterface;
 
+    char *commandString;
+    if (argc < 2) {
+        commandString = "help";
+    } else {
+        commandString = argv[1];
+    }
+
     // Get command
-    AppCommand appCommand(argv[1]);
+    AppCommand appCommand(commandString);
     AppCommand::Command command = appCommand.command();
     if (command == AppCommand::Help) {
         userInterface.printHelp(appCommand.getHelpText());
@@ -38,17 +45,17 @@ int main(int argc, char *argv[])
     // Execute command
     switch (command) {
     case AppCommand::New: {
-        PwGenerator pwGenerator;
-        qDebug() << "Get password length and definition ...";
-        int passwordLength = optionTable.value('l').toInt();
-        QString characterDefinition = optionTable.value('s').toString();
-        qDebug() << "Length : " << passwordLength << "\tDefinition : " << characterDefinition << "\tIs NULL : " << characterDefinition.isNull();
-        QString password = pwGenerator.passwordFromDefinition(passwordLength, characterDefinition);
-        if (pwGenerator.hasError()) {
-            userInterface.printError(pwGenerator.errorMessage());
-            return -1;
+        if (!optionTable.contains('k')) {
+            PwGenerator pwGenerator;
+            int passwordLength = optionTable.value('l').toInt();
+            QString characterDefinition = optionTable.value('s').toString();
+            QString password = pwGenerator.passwordFromDefinition(passwordLength, characterDefinition);
+            if (pwGenerator.hasError()) {
+                userInterface.printError(pwGenerator.errorMessage());
+                return -1;
+            }
+            optionTable.insert('k', QVariant(password));
         }
-        optionTable.insert('k', QVariant(password));
         userInterface.printOptionTable(optionTable);
         Persistence database;
         optionTable.insert('t', QVariant(QDateTime::currentDateTime()));
@@ -62,6 +69,15 @@ int main(int argc, char *argv[])
         break;
     }
     case AppCommand::Show: {
+        if (optionTable.contains('a')) {
+            optionTable.insert('i', QVariant());
+            optionTable.insert('p', QVariant());
+            optionTable.insert('u', QVariant());
+            optionTable.insert('k', QVariant());
+            optionTable.insert('l', QVariant());
+            optionTable.insert('s', QVariant());
+            optionTable.insert('t', QVariant());
+        }
         Persistence database;
         QList<Account> list = database.findAccount(optionTable);
         if (database.hasError()) {
@@ -96,7 +112,7 @@ int main(int argc, char *argv[])
     }
     case AppCommand::GeneratePW: {
         Persistence database;
-        // Got new password definition and length?
+        // If not have new password definition then get it from database.
         if (! optionTable.contains('l') && ! optionTable.contains('s')) {
             Account pwDefinition = database.passwordDefinition(optionTable);
             if (pwDefinition.isEmpty()) {
