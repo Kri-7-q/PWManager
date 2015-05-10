@@ -2,10 +2,9 @@
 #define OPTIONS_H
 
 #include "optiondefinition.h"
+#include "optiontable.h"
 #include <QStringList>
-#include <QHash>
 
-typedef QHash<char, QVariant> OptionTable;
 
 class Options
 {

@@ -70,13 +70,10 @@ int main(int argc, char *argv[])
     }
     case AppCommand::Show: {
         if (optionTable.contains('a')) {
-            optionTable.insert('i', QVariant());
-            optionTable.insert('p', QVariant());
-            optionTable.insert('u', QVariant());
-            optionTable.insert('k', QVariant());
-            optionTable.insert('l', QVariant());
-            optionTable.insert('s', QVariant());
-            optionTable.insert('t', QVariant());
+            optionTable.replaceOptionA();
+        }
+        if (optionTable.contains('e') && optionTable.size() < 2) {
+            optionTable.insertStandardOptionForShow();
         }
         Persistence database;
         QList<Account> list = database.findAccount(optionTable);

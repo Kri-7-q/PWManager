@@ -47,24 +47,22 @@ bool Persistence::persistAccount(const OptionTable &optionTable)
 {
     QSqlDatabase db = QSqlDatabase::database("local");
     if (! db.open()) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could not open Database !";
         return false;
     }
-    ColumnValuePairs pairList = columnNameAndValuePairList(optionTable);
-    QString queryString = sqlInsertInto(pairList);
+    QList<Element> elementList = parseOptionTable(optionTable);
+    QString queryString = sqlInsertInto(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(queryString);
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "SQL query is NOT valid. Could NOT prepare query !";
         db.close();
         return false;
     }
-    for (QPair<QString, QVariant> pair : pairList) {
-        query.addBindValue(pair.second);
-    }
+    bindValuesToQuery(query, elementList);
     result = query.exec();
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could not store Data !";
     }
     db.close();
 
@@ -84,27 +82,26 @@ QList<Account> Persistence::findAccount(const OptionTable &optionTable)
 {
     QSqlDatabase db = QSqlDatabase::database("local");
     if (! db.open()) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could NOT open Database !";
         return QList<Account>();
     }
-    ColumnValuePairs pairList = columnNameAndValuePairList(optionTable);
-    QString queryColumns = sqlQueryForColumns(pairList);
-    QVariantList valuesToBind;
-    QString queryWhereClause = sqlWhereClauseFind(optionTable, valuesToBind);
-    QString querySQL = QString("SELECT %1 FROM %2%3").arg(queryColumns).arg(m_tableName).arg(queryWhereClause);
+    QList<Element> elementList = parseOptionTable(optionTable);
+    bool hasNoWhereClause = optionTable.contains('e');
+    QString querySQL = sqlSelectFrom(elementList, hasNoWhereClause);
+    printElementList(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
     if (!result) {
-        m_errorString = db.lastError().text();
+        qDebug() << "Query string : " << querySQL;
+        m_errorString = "SQL query is NOT valid. Could NOT prepare query !";
         db.close();
         return QList<Account>();
     }
-    for (QVariant value : valuesToBind) {
-        query.addBindValue(value);
-    }
+    bindValuesToQuery(query, elementList);
+    qDebug() << "SQL query : " << querySQL;
     result = query.exec();
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could NOT read Data !";
         db.close();
         return QList<Account>();
     }
@@ -127,26 +124,22 @@ int Persistence::deleteAccount(const OptionTable &optionTable)
 {
     QSqlDatabase db = QSqlDatabase::database("local");
     if (! db.open()) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could NOT open database !";
         return -1;
     }
-    QString querySQL = QString("DELETE FROM %1").arg(m_tableName);
-    QVariantList valuesToBind;
-    QString queryWhereClause = sqlWhereClauseFind(optionTable, valuesToBind);
-    querySQL.append(queryWhereClause);
+    QList<Element> elementList = parseOptionTable(optionTable);
+    QString querySQL = sqlDeleteFrom(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "SQL query is NOT valid. Could not prepare query !";
         db.close();
         return 0;
     }
-    for (QVariant value : valuesToBind) {
-        query.addBindValue(value);
-    }
+    bindValuesToQuery(query, elementList);
     result = query.exec();
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could NOT delete data !";
         db.close();
         return 0;
     }
@@ -161,32 +154,26 @@ int Persistence::deleteAccount(const OptionTable &optionTable)
  * @param optionTable
  * @return
  */
-bool Persistence::modifyAccount(const OptionTable &optionTable)
+bool Persistence::modifyAccount(OptionTable optionTable)
 {
     QSqlDatabase db = QSqlDatabase::database("local");
     if (! db.open()) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could NOT open database !";
         return false;
     }
-    QList<char> optionList = optionTable.keys();
-    QString whereClause = sqlWhereIdentify(optionTable, optionList);
-    QString touple = sqlUpdateTouple(optionTable, optionList);
-    QString querySQL = QString("UPDATE %1 SET %2").arg(m_tableName).arg(touple).append(whereClause);
+    QList<Element> elementList = parseOptionTable(optionTable);
+    QString querySQL = sqlUpdateSet(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "SQL query is not valid. Could NOT prepare query !";
         db.close();
         return false;
     }
-    for (char option : optionTable.keys()) {
-        QVariant value = optionTable.value(option);
-        QString bindString = sqlBindingString(option);
-        query.bindValue(bindString, value);
-    }
+    bindValuesToQuery(query, elementList);
     result = query.exec();
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "Could NOT store data !";
     }
     db.close();
 
@@ -206,24 +193,16 @@ Account Persistence::passwordDefinition(const OptionTable &optionTable)
         return Account();
     }
     QString querySQL = QString("SELECT %1,%2 FROM %3").arg(databaseNameOfOption('l')).arg(databaseNameOfOption('s')).arg(m_tableName);
-    QList<char> optionList = optionTable.keys();
-    QString whereCondition = sqlWhereIdentify(optionTable, optionList);
-    querySQL.append(whereCondition);
+    QList<Element> elementList = parseOptionTable(optionTable);
+    querySQL.append(sqlWhere(elementList, true));
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
     if (!result) {
-        m_errorString = db.lastError().text();
+        m_errorString = "SQL query is NOT vail. Could not prepare query !";
         db.close();
         return Account();
     }
-    char *identifier = "ipu";
-    for (int index=0; index<3; ++index) {
-        if (optionTable.contains( identifier[index] )) {
-            QVariant value = optionTable.value(identifier[index]);
-            QString bindString = sqlBindingString(identifier[index]);
-            query.bindValue(bindString, value);
-        }
-    }
+    bindValuesToQuery(query, elementList);
     result = query.exec();
     if (!result) {
         m_errorString = db.lastError().text();
@@ -244,18 +223,33 @@ Account Persistence::passwordDefinition(const OptionTable &optionTable)
 }
 
 /**
- * Creates a string with all database column names.
- * The names are comma separated. If bindStrings is ture
- * each column name will have a leading colon.
- * @param account
- * @param bindStrings
+ * @brief Persistence::bindStringList
+ * @param elementList
  * @return
  */
-QString Persistence::sqlQueryForColumns(const ColumnValuePairs &pairList)
+QString Persistence::bindStringList(const QList<Element> &elementList) const
+{
+    QString bindString;
+    for (Element element : elementList) {
+        element.bindString = element.columnName.prepend(':');
+        bindString.append(element.bindString).append(',');
+    }
+    bindString.remove(bindString.length()-1, 1);
+
+    return bindString;
+}
+
+/**
+ * Creates a string with all database column names.
+ * The names are comma separated.
+ * @param optionTable
+ * @return
+ */
+QString Persistence::sqlColumnsToQuery(const QList<Element> &elementList) const
 {
     QString queryString;
-    for (QPair<QString, QVariant> pair : pairList) {
-        queryString.append(pair.first).append(',');
+    for (Element element : elementList) {
+        queryString.append(element.columnName).append(',');
     }
     queryString.remove(queryString.length()-1, 1);
 
@@ -263,72 +257,29 @@ QString Persistence::sqlQueryForColumns(const ColumnValuePairs &pairList)
 }
 
 /**
- * Return a list of all column names from a adatabase table.
- * @param db
- * @return
- */
-QStringList Persistence::tableColumnNames(QSqlDatabase &db, const QString &table)
-{
-    QStringList columnName;
-    QSqlRecord record = db.record(table);
-    for (int i=0; i<record.count(); ++i) {
-        columnName << record.fieldName(i);
-    }
-
-    return columnName;
-}
-
-/**
  * Get a SQL where for reading account objects from database.
  * @param account
  * @return
  */
-QString Persistence::sqlWhereClauseFind(const OptionTable &optionTable, QVariantList &toBind)
+QString Persistence::sqlWhere(QList<Element> &elementList, const bool identifyRecord) const
 {
-    if (optionTable.contains('e')) {
-        return QString();
-    }
-    bool hasCondition = false;
-    QString whereClause(" WHERE ");
-    QList<char> keyList = optionTable.keys();
-    for (char option : keyList) {
-        QVariant value = optionTable.value(option);
-        if (! value.isNull()) {
-            QString column = databaseNameOfOption(option);
-            QString condition = column + "=? AND";
-            toBind << value;
-            whereClause.append(condition);
-            hasCondition = true;
+    QString whereClause;
+    for (Element &element : elementList) {
+        if (identifyRecord && !element.isIdentifier) {
+            continue;
         }
+        if (!element.value.isValid()) {
+            continue;
+        }
+        element.bindString = QString(":").append(element.columnName);
+        whereClause.append(element.columnName).append("=").append(element.bindString).append(" AND ");
     }
-    if (! hasCondition) {
-        return QString();
+    if (!whereClause.isEmpty()) {
+        whereClause.prepend(" WHERE ");
+        whereClause.remove(whereClause.length()-4, 4);
     }
-    whereClause.remove(whereClause.length()-4, 4);
 
     return whereClause;
-}
-
-/**
- * Creates a SQL WHERE clause to identify one Account in database.
- * To identify there are a primary key and a unique constraint.
- * It removes the identifier from OptionTable.
- * @param optionTable
- * @return
- */
-QString Persistence::sqlWhereIdentify(const OptionTable &optionTable, QList<char> &optionList)
-{
-    if (optionList.contains('i')) {
-        optionList.removeOne('i');
-        return QString(" WHERE %1=:i").arg(m_primaryKey);
-    }
-    else if (optionList.contains('p') && optionList.contains('u')) {
-        optionList.removeOne('p');
-        optionList.removeOne('u');
-        return QString(" WHERE %1=:p AND %3=:u").arg(m_unique[0]).arg(m_unique[1]);
-    }
-
-    return QString();
 }
 
 /**
@@ -361,7 +312,7 @@ QList<Account> Persistence::getAccountList(QSqlQuery &query)
  * @param optionList
  * @return
  */
-QStringList Persistence::optionToDatabaseNames(QList<char> optionList)
+QStringList Persistence::optionToDatabaseNames(QList<char> &optionList)
 {
     QStringList columnNames;
     int index = 0;
@@ -383,109 +334,149 @@ QStringList Persistence::optionToDatabaseNames(QList<char> optionList)
 }
 
 /**
- * Creates a string with SQL placeholders '?'.
- * @param columnCount
- * @return
- */
-QString Persistence::sqlPlaceholderString(const QList<char> &optionList)
-{
-    if (optionList.isEmpty()) {
-        return QString();
-    }
-    QString placeholder(sqlBindingString(optionList.first()));
-    for (int i=1; i<optionList.size(); ++i) {
-        QString bindString = QString(",%1").arg(sqlBindingString(optionList[i]));
-        placeholder.append(bindString);
-    }
-
-    return placeholder;
-}
-
-/**
- * Build a placeholder string with '?' as placeholders.
- * @param amount                The amount of '?'.
- * @return placeholderString    A string like '?,?,?,?'.
- */
-QString Persistence::sqlPlaceholderString(const int amount)
-{
-    QString placeholderString;
-    for (int i=0; i<amount; ++i) {
-        placeholderString.append("?,");
-    }
-    placeholderString.remove(placeholderString.length()-1, 1);
-
-    return placeholderString;
-}
-
-/**
- * Creates a string with komma separarted touples of column names
- * and values for a update SQL instruction.
- * For instance :   id=?,provider=?,password=?
- * @param optionTable
- * @param optionList
- * @return
- */
-QString Persistence::sqlUpdateTouple(const OptionTable &optionTable, QList<char> optionList)
-{
-    QString sqlUpdate;
-    for (char option : optionList) {
-        QString column = databaseNameOfOption(option);
-        QString touple = QString(column + "=%1,").arg(sqlBindingString(option));
-        sqlUpdate.append(touple);
-    }
-    if (sqlUpdate.endsWith(',')) {
-        sqlUpdate.remove(sqlUpdate.length()-1, 1);
-    }
-
-    return sqlUpdate;
-}
-
-/**
- * Creates a binding string out of an option.
- * @param option
- * @return
- */
-QString Persistence::sqlBindingString(const char option)
-{
-    return QString(":").append(option);
-}
-
-/**
  * Build the SQL insert into query string.
  * @param pairList
  * @return
  */
-QString Persistence::sqlInsertInto(const ColumnValuePairs &pairList)
+QString Persistence::sqlInsertInto(const QList<Element> &elementList) const
 {
     QString insertInto("INSERT INTO %1 (%2) VALUES (%3)");
     insertInto.arg(m_tableName);
-    insertInto.arg(sqlQueryForColumns(pairList));
-    insertInto.arg(sqlPlaceholderString(pairList.size()));
+    insertInto.arg(sqlColumnsToQuery(elementList));
+    insertInto.arg(bindStringList(elementList));
 
     return insertInto;
 }
 
 /**
- * Build pairs of column names and values from options.
- * @param optionTable
- * @return columnValueList      A list with pairs of column names and values.
+ * @brief Persistence::sqlUpdateSet
+ * @param elementList
+ * @return
  */
-ColumnValuePairs Persistence::columnNameAndValuePairList(const OptionTable &optionTable)
+QString Persistence::sqlUpdateSet(QList<Element> &elementList) const
 {
-    ColumnValuePairs columnValueList;
-    QList<char> optionList = optionTable.keys();
-    for (char option : optionList) {
-        QString columnName = databaseNameOfOption(option);
-        if (columnName.isEmpty()) {
+    QString sqlUpdate("UPDATE %1 SET %2");
+    sqlUpdate.arg(m_tableName);
+    sqlUpdate.arg(updateToupleList(elementList));
+    sqlUpdate.append(sqlWhere(elementList, true));
+
+    return sqlUpdate;
+}
+
+/**
+ * @brief Persistence::queryElementList
+ * @param optionTable
+ * @return
+ */
+QList<Element> Persistence::parseOptionTable(const OptionTable &optionTable) const
+{
+    OptionTable copyOptionTable(optionTable);
+    QList<Element> elementList;
+    if (copyOptionTable.value('i').isValid()) {
+        QVariant value = copyOptionTable.take('i');
+        QString column = databaseNameOfOption('i');
+        Element id(column, value, true);
+        elementList << id;
+    }
+    else if (copyOptionTable.value('p').isValid() && copyOptionTable.value('u').isValid()) {
+        QVariant value = copyOptionTable.take('p');
+        QString column = databaseNameOfOption('p');
+        Element provider(column, value, true);
+        elementList << provider;
+        value = copyOptionTable.take('u');
+        column = databaseNameOfOption('u');
+        Element username(column, value, true);
+        elementList << username;
+    }
+    for (char option : optionTable.keys()) {
+        QString column = databaseNameOfOption(option);
+        if (column.isEmpty()) {
             continue;
         }
-        QPair<QString, QVariant> pair;
-        pair.first = columnName;
-        pair.second = optionTable.value(option);
-        columnValueList << pair;
+        QVariant value = copyOptionTable.value(option);
+        Element e(column, value, false);
+        elementList << e;
     }
 
-    return columnValueList;
+    return elementList;
+}
+
+/**
+ * @brief Persistence::sqlSelectFrom
+ * @param elementList
+ * @return
+ */
+QString Persistence::sqlSelectFrom(QList<Element> &elementList, const bool hasNoWhereClause) const
+{
+    QString columnList = sqlColumnsToQuery(elementList);
+    QString selectQuery = QString("SELECT %1 FROM %2").arg(columnList).arg(m_tableName);
+    if (hasNoWhereClause) {
+        return selectQuery;
+    }
+    QString whereClause = sqlWhere(elementList);
+    selectQuery.append(whereClause);
+
+    return selectQuery;
+}
+
+/**
+ * @brief Persistence::bindValuesToQuery
+ * @param query
+ * @param elementList
+ */
+void Persistence::bindValuesToQuery(QSqlQuery &query, const QList<Element> &elementList) const
+{
+    for (Element element : elementList) {
+        if (element.bindString.isEmpty()) {
+            continue;
+        }
+        query.bindValue(element.bindString, element.value);
+    }
+}
+
+/**
+ * @brief Persistence::sqlDeleteFrom
+ * @param elementList
+ * @return
+ */
+QString Persistence::sqlDeleteFrom(QList<Element> &elementList) const
+{
+    QString sqlDelete("DELETE FROM %1");
+    sqlDelete.arg(m_tableName);
+    sqlDelete.append(sqlWhere(elementList));
+
+    return sqlDelete;
+}
+
+/**
+ * @brief Persistence::updateToupleList
+ * @param elementList
+ * @return
+ */
+QString Persistence::updateToupleList(QList<Element> &elementList) const
+{
+    QString touple;
+    for (Element element : elementList) {
+        if (!element.isIdentifier) {
+            element.bindString = element.columnName.prepend(':');
+            touple.append(element.columnName).append('=').append(element.bindString).append(",");
+        }
+    }
+    touple.remove(touple.length()-1, 1);
+
+    return touple;
+}
+
+/**
+ * @brief Persistence::printElementList
+ * @param elementList
+ */
+void Persistence::printElementList(const QList<Element> &elementList) const
+{
+    qDebug() << "Element list :" << endl << "Column name, bind String, value" << endl << "----------------------------------------------------";
+    for (Element element : elementList) {
+        qDebug() << element.columnName << ", " << element.bindString << ", " << element.value;
+    }
 }
 
 /**
@@ -503,7 +494,7 @@ QString Persistence::databaseNameOfOption(const char option)
     case 'i':
         return "id";
     case 'q':
-        return "qustion";
+        return "question";
     case 'r':
         return "answer";
     case 'l':

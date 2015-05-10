@@ -2,15 +2,16 @@
 #define PERSISTENCE_H
 
 #include "columnwidth.h"
+#include "element.h"
+#include "optiontable.h"
 #include <QStringList>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QDebug>
 
 typedef QHash<QString, QVariant> Account;
-typedef QHash<char, QVariant> OptionTable;
-typedef QList<QPair<QString, QVariant> > ColumnValuePairs;
 
 class Persistence
 {
@@ -22,7 +23,7 @@ public:
     bool persistAccount(const OptionTable &optionTable);
     QList<Account> findAccount(const OptionTable &optionTable);
     int deleteAccount(const OptionTable &optionTable);
-    bool modifyAccount(const OptionTable &optionTable);
+    bool modifyAccount(OptionTable optionTable);
     Account passwordDefinition(const OptionTable &optionTable);
     ColumnWidth columnWidthTable() const                   { return m_columnWidth; }
     bool hasError() const                                   { return !m_errorString.isEmpty(); }
@@ -36,18 +37,20 @@ private:
     QString m_errorString;
 
     // Methods
-    QString sqlQueryForColumns(const ColumnValuePairs &pairList);
-    QStringList tableColumnNames(QSqlDatabase &db, const QString &table);
-    QString sqlWhereClauseFind(const OptionTable &optionTable, QVariantList &toBind);
-    QString sqlWhereIdentify(const OptionTable &optionTable, QList<char> &optionList);
+    QString sqlColumnsToQuery(const QList<Element> &elementList) const;
+    QString bindStringList(const QList<Element> &elementList) const;
+    QString sqlWhere(QList<Element> &elementList, const bool identifyRecord = false) const;
     QList<Account> getAccountList(QSqlQuery &query);
-    QStringList optionToDatabaseNames(QList<char> optionList);
-    QString sqlPlaceholderString(const QList<char> &optionList);
-    QString sqlPlaceholderString(const int amount);
-    QString sqlUpdateTouple(const OptionTable &optionTable, QList<char> optionList);
-    QString sqlBindingString(const char option);
-    QString sqlInsertInto(const ColumnValuePairs &pairList);
-    ColumnValuePairs columnNameAndValuePairList(const OptionTable &optionTable);
+    QStringList optionToDatabaseNames(QList<char> &optionList);
+    QString sqlInsertInto(const QList<Element> &elementList) const;
+    QString sqlUpdateSet(QList<Element> &elementList) const;
+    QList<Element> parseOptionTable(const OptionTable &optionTable) const;
+    QString sqlSelectFrom(QList<Element> &elementList, const bool hasNoWhereClause) const;
+    void bindValuesToQuery(QSqlQuery &query, const QList<Element> &elementList) const;
+    QString sqlDeleteFrom(QList<Element> &elementList) const;
+    QString updateToupleList(QList<Element> &elementList) const;
+
+    void printElementList(const QList<Element> &elementList) const;
 
 public:
     //Static
