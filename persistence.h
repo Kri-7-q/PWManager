@@ -38,11 +38,11 @@ private:
 
     // Methods
     QString sqlColumnsToQuery(const QList<Element> &elementList) const;
-    QString bindStringList(const QList<Element> &elementList) const;
+    QString bindStringList(QList<Element> &elementList) const;
     QString sqlWhere(QList<Element> &elementList, const bool identifyRecord = false) const;
     QList<Account> getAccountList(QSqlQuery &query);
     QStringList optionToDatabaseNames(QList<char> &optionList);
-    QString sqlInsertInto(const QList<Element> &elementList) const;
+    QString sqlInsertInto(QList<Element> &elementList) const;
     QString sqlUpdateSet(QList<Element> &elementList) const;
     QList<Element> parseOptionTable(const OptionTable &optionTable) const;
     QString sqlSelectFrom(QList<Element> &elementList, const bool hasNoWhereClause) const;

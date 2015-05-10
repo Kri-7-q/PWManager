@@ -3,7 +3,7 @@
 Persistence::Persistence() :
     m_primaryKey("id"),
     m_unique(QStringList() << QString("provider") << QString("username")),
-    m_tableName("Account"),
+    m_tableName("account"),
     m_databaseName("pwmanager")
 {
     addDatabase("local", m_databaseName, "localhost", 3306, "root", "postgres");
@@ -55,6 +55,8 @@ bool Persistence::persistAccount(const OptionTable &optionTable)
     QSqlQuery query(db);
     bool result = query.prepare(queryString);
     if (!result) {
+        printElementList(elementList);
+        qDebug() << "SQL query : " << queryString;
         m_errorString = "SQL query is NOT valid. Could NOT prepare query !";
         db.close();
         return false;
@@ -88,17 +90,16 @@ QList<Account> Persistence::findAccount(const OptionTable &optionTable)
     QList<Element> elementList = parseOptionTable(optionTable);
     bool hasNoWhereClause = optionTable.contains('e');
     QString querySQL = sqlSelectFrom(elementList, hasNoWhereClause);
-    printElementList(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
     if (!result) {
+        printElementList(elementList);
         qDebug() << "Query string : " << querySQL;
         m_errorString = "SQL query is NOT valid. Could NOT prepare query !";
         db.close();
         return QList<Account>();
     }
     bindValuesToQuery(query, elementList);
-    qDebug() << "SQL query : " << querySQL;
     result = query.exec();
     if (!result) {
         m_errorString = "Could NOT read Data !";
@@ -132,6 +133,8 @@ int Persistence::deleteAccount(const OptionTable &optionTable)
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
     if (!result) {
+        printElementList(elementList);
+        qDebug() << "SQL query : " << querySQL;
         m_errorString = "SQL query is NOT valid. Could not prepare query !";
         db.close();
         return 0;
@@ -166,6 +169,8 @@ bool Persistence::modifyAccount(OptionTable optionTable)
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
     if (!result) {
+        printElementList(elementList);
+        qDebug() << "SQL query : " << querySQL;
         m_errorString = "SQL query is not valid. Could NOT prepare query !";
         db.close();
         return false;
@@ -227,11 +232,11 @@ Account Persistence::passwordDefinition(const OptionTable &optionTable)
  * @param elementList
  * @return
  */
-QString Persistence::bindStringList(const QList<Element> &elementList) const
+QString Persistence::bindStringList(QList<Element> &elementList) const
 {
     QString bindString;
-    for (Element element : elementList) {
-        element.bindString = element.columnName.prepend(':');
+    for (Element &element : elementList) {
+        element.bindString = QString(":").append(element.columnName);
         bindString.append(element.bindString).append(',');
     }
     bindString.remove(bindString.length()-1, 1);
@@ -276,7 +281,7 @@ QString Persistence::sqlWhere(QList<Element> &elementList, const bool identifyRe
     }
     if (!whereClause.isEmpty()) {
         whereClause.prepend(" WHERE ");
-        whereClause.remove(whereClause.length()-4, 4);
+        whereClause.remove(whereClause.length()-4, 5);
     }
 
     return whereClause;
@@ -338,12 +343,11 @@ QStringList Persistence::optionToDatabaseNames(QList<char> &optionList)
  * @param pairList
  * @return
  */
-QString Persistence::sqlInsertInto(const QList<Element> &elementList) const
+QString Persistence::sqlInsertInto(QList<Element> &elementList) const
 {
-    QString insertInto("INSERT INTO %1 (%2) VALUES (%3)");
-    insertInto.arg(m_tableName);
-    insertInto.arg(sqlColumnsToQuery(elementList));
-    insertInto.arg(bindStringList(elementList));
+    QString columns = sqlColumnsToQuery(elementList);
+    QString bindString = bindStringList(elementList);
+    QString insertInto = QString("INSERT INTO %1 (%2) VALUES (%3)").arg(m_tableName).arg(columns).arg(bindString);
 
     return insertInto;
 }
@@ -355,9 +359,8 @@ QString Persistence::sqlInsertInto(const QList<Element> &elementList) const
  */
 QString Persistence::sqlUpdateSet(QList<Element> &elementList) const
 {
-    QString sqlUpdate("UPDATE %1 SET %2");
-    sqlUpdate.arg(m_tableName);
-    sqlUpdate.arg(updateToupleList(elementList));
+    QString touples = updateToupleList(elementList);
+    QString sqlUpdate = QString("UPDATE %1 SET %2").arg(m_tableName).arg(touples);
     sqlUpdate.append(sqlWhere(elementList, true));
 
     return sqlUpdate;
@@ -388,7 +391,7 @@ QList<Element> Persistence::parseOptionTable(const OptionTable &optionTable) con
         Element username(column, value, true);
         elementList << username;
     }
-    for (char option : optionTable.keys()) {
+    for (char option : copyOptionTable.keys()) {
         QString column = databaseNameOfOption(option);
         if (column.isEmpty()) {
             continue;
@@ -441,8 +444,7 @@ void Persistence::bindValuesToQuery(QSqlQuery &query, const QList<Element> &elem
  */
 QString Persistence::sqlDeleteFrom(QList<Element> &elementList) const
 {
-    QString sqlDelete("DELETE FROM %1");
-    sqlDelete.arg(m_tableName);
+    QString sqlDelete = QString("DELETE FROM %1").arg(m_tableName);
     sqlDelete.append(sqlWhere(elementList));
 
     return sqlDelete;
@@ -456,9 +458,9 @@ QString Persistence::sqlDeleteFrom(QList<Element> &elementList) const
 QString Persistence::updateToupleList(QList<Element> &elementList) const
 {
     QString touple;
-    for (Element element : elementList) {
+    for (Element &element : elementList) {
         if (!element.isIdentifier) {
-            element.bindString = element.columnName.prepend(':');
+            element.bindString = QString(":").append(element.columnName);
             touple.append(element.columnName).append('=').append(element.bindString).append(",");
         }
     }
