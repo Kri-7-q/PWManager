@@ -2,7 +2,7 @@
 
 /**
  * Constructor
- * @param parameter
+ * @param parameter The first parameter of command line input.
  */
 AppCommand::AppCommand(const char *parameter)
 {
@@ -18,9 +18,9 @@ AppCommand::~AppCommand()
 }
 
 /**
- * Return a string containing all options of a command.
- * Options seperated by a pipe symbol '|'.
- * @return
+ * Creates a set of options to the command given
+ * throuh the constructor.
+ * @return list     A list of all options which can be processed from the command.
  */
 QList<OptionDefinition> AppCommand::commandsOptions()
 {
@@ -106,7 +106,7 @@ QStringList AppCommand::getHelpText()
 
 /**
  * Parse the first command line parameter.
- * It should fit to one of the commands.
+ * It should fit to one of the applications commands.
  * @return
  */
 AppCommand::Command AppCommand::parseCommand(const char *parameter)

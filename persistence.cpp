@@ -50,7 +50,7 @@ bool Persistence::persistAccount(const OptionTable &optionTable)
         m_errorString = "Could not open Database !";
         return false;
     }
-    QList<Element> elementList = parseOptionTable(optionTable);
+    QList<OptionInfo> elementList = parseOptionTable(optionTable);
     QString queryString = sqlInsertInto(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(queryString);
@@ -87,7 +87,7 @@ QList<Account> Persistence::findAccount(const OptionTable &optionTable)
         m_errorString = "Could NOT open Database !";
         return QList<Account>();
     }
-    QList<Element> elementList = parseOptionTable(optionTable);
+    QList<OptionInfo> elementList = parseOptionTable(optionTable);
     bool hasNoWhereClause = optionTable.contains('e');
     QString querySQL = sqlSelectFrom(elementList, hasNoWhereClause);
     QSqlQuery query(db);
@@ -128,7 +128,7 @@ int Persistence::deleteAccount(const OptionTable &optionTable)
         m_errorString = "Could NOT open database !";
         return -1;
     }
-    QList<Element> elementList = parseOptionTable(optionTable);
+    QList<OptionInfo> elementList = parseOptionTable(optionTable);
     QString querySQL = sqlDeleteFrom(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
@@ -164,7 +164,7 @@ bool Persistence::modifyAccount(OptionTable optionTable)
         m_errorString = "Could NOT open database !";
         return false;
     }
-    QList<Element> elementList = parseOptionTable(optionTable);
+    QList<OptionInfo> elementList = parseOptionTable(optionTable);
     QString querySQL = sqlUpdateSet(elementList);
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
@@ -198,7 +198,7 @@ Account Persistence::passwordDefinition(const OptionTable &optionTable)
         return Account();
     }
     QString querySQL = QString("SELECT %1,%2 FROM %3").arg(databaseNameOfOption('l')).arg(databaseNameOfOption('s')).arg(m_tableName);
-    QList<Element> elementList = parseOptionTable(optionTable);
+    QList<OptionInfo> elementList = parseOptionTable(optionTable);
     querySQL.append(sqlWhere(elementList, true));
     QSqlQuery query(db);
     bool result = query.prepare(querySQL);
@@ -232,10 +232,10 @@ Account Persistence::passwordDefinition(const OptionTable &optionTable)
  * @param elementList
  * @return
  */
-QString Persistence::bindStringList(QList<Element> &elementList) const
+QString Persistence::bindStringList(QList<OptionInfo> &elementList) const
 {
     QString bindString;
-    for (Element &element : elementList) {
+    for (OptionInfo &element : elementList) {
         element.bindString = QString(":").append(element.columnName);
         bindString.append(element.bindString).append(',');
     }
@@ -250,10 +250,10 @@ QString Persistence::bindStringList(QList<Element> &elementList) const
  * @param optionTable
  * @return
  */
-QString Persistence::sqlColumnsToQuery(const QList<Element> &elementList) const
+QString Persistence::sqlColumnsToQuery(const QList<OptionInfo> &elementList) const
 {
     QString queryString;
-    for (Element element : elementList) {
+    for (OptionInfo element : elementList) {
         queryString.append(element.columnName).append(',');
     }
     queryString.remove(queryString.length()-1, 1);
@@ -266,10 +266,10 @@ QString Persistence::sqlColumnsToQuery(const QList<Element> &elementList) const
  * @param account
  * @return
  */
-QString Persistence::sqlWhere(QList<Element> &elementList, const bool identifyRecord) const
+QString Persistence::sqlWhere(QList<OptionInfo> &elementList, const bool identifyRecord) const
 {
     QString whereClause;
-    for (Element &element : elementList) {
+    for (OptionInfo &element : elementList) {
         if (identifyRecord && !element.isIdentifier) {
             continue;
         }
@@ -343,7 +343,7 @@ QStringList Persistence::optionToDatabaseNames(QList<char> &optionList)
  * @param pairList
  * @return
  */
-QString Persistence::sqlInsertInto(QList<Element> &elementList) const
+QString Persistence::sqlInsertInto(QList<OptionInfo> &elementList) const
 {
     QString columns = sqlColumnsToQuery(elementList);
     QString bindString = bindStringList(elementList);
@@ -357,7 +357,7 @@ QString Persistence::sqlInsertInto(QList<Element> &elementList) const
  * @param elementList
  * @return
  */
-QString Persistence::sqlUpdateSet(QList<Element> &elementList) const
+QString Persistence::sqlUpdateSet(QList<OptionInfo> &elementList) const
 {
     QString touples = updateToupleList(elementList);
     QString sqlUpdate = QString("UPDATE %1 SET %2").arg(m_tableName).arg(touples);
@@ -371,24 +371,24 @@ QString Persistence::sqlUpdateSet(QList<Element> &elementList) const
  * @param optionTable
  * @return
  */
-QList<Element> Persistence::parseOptionTable(const OptionTable &optionTable) const
+QList<OptionInfo> Persistence::parseOptionTable(const OptionTable &optionTable) const
 {
     OptionTable copyOptionTable(optionTable);
-    QList<Element> elementList;
+    QList<OptionInfo> elementList;
     if (copyOptionTable.value('i').isValid()) {
         QVariant value = copyOptionTable.take('i');
         QString column = databaseNameOfOption('i');
-        Element id(column, value, true);
+        OptionInfo id(column, value, true);
         elementList << id;
     }
     else if (copyOptionTable.value('p').isValid() && copyOptionTable.value('u').isValid()) {
         QVariant value = copyOptionTable.take('p');
         QString column = databaseNameOfOption('p');
-        Element provider(column, value, true);
+        OptionInfo provider(column, value, true);
         elementList << provider;
         value = copyOptionTable.take('u');
         column = databaseNameOfOption('u');
-        Element username(column, value, true);
+        OptionInfo username(column, value, true);
         elementList << username;
     }
     for (char option : copyOptionTable.keys()) {
@@ -397,7 +397,7 @@ QList<Element> Persistence::parseOptionTable(const OptionTable &optionTable) con
             continue;
         }
         QVariant value = copyOptionTable.value(option);
-        Element e(column, value, false);
+        OptionInfo e(column, value, false);
         elementList << e;
     }
 
@@ -409,7 +409,7 @@ QList<Element> Persistence::parseOptionTable(const OptionTable &optionTable) con
  * @param elementList
  * @return
  */
-QString Persistence::sqlSelectFrom(QList<Element> &elementList, const bool hasNoWhereClause) const
+QString Persistence::sqlSelectFrom(QList<OptionInfo> &elementList, const bool hasNoWhereClause) const
 {
     QString columnList = sqlColumnsToQuery(elementList);
     QString selectQuery = QString("SELECT %1 FROM %2").arg(columnList).arg(m_tableName);
@@ -427,9 +427,9 @@ QString Persistence::sqlSelectFrom(QList<Element> &elementList, const bool hasNo
  * @param query
  * @param elementList
  */
-void Persistence::bindValuesToQuery(QSqlQuery &query, const QList<Element> &elementList) const
+void Persistence::bindValuesToQuery(QSqlQuery &query, const QList<OptionInfo> &elementList) const
 {
-    for (Element element : elementList) {
+    for (OptionInfo element : elementList) {
         if (element.bindString.isEmpty()) {
             continue;
         }
@@ -442,7 +442,7 @@ void Persistence::bindValuesToQuery(QSqlQuery &query, const QList<Element> &elem
  * @param elementList
  * @return
  */
-QString Persistence::sqlDeleteFrom(QList<Element> &elementList) const
+QString Persistence::sqlDeleteFrom(QList<OptionInfo> &elementList) const
 {
     QString sqlDelete = QString("DELETE FROM %1").arg(m_tableName);
     sqlDelete.append(sqlWhere(elementList));
@@ -455,10 +455,10 @@ QString Persistence::sqlDeleteFrom(QList<Element> &elementList) const
  * @param elementList
  * @return
  */
-QString Persistence::updateToupleList(QList<Element> &elementList) const
+QString Persistence::updateToupleList(QList<OptionInfo> &elementList) const
 {
     QString touple;
-    for (Element &element : elementList) {
+    for (OptionInfo &element : elementList) {
         if (!element.isIdentifier) {
             element.bindString = QString(":").append(element.columnName);
             touple.append(element.columnName).append('=').append(element.bindString).append(",");
@@ -473,10 +473,10 @@ QString Persistence::updateToupleList(QList<Element> &elementList) const
  * @brief Persistence::printElementList
  * @param elementList
  */
-void Persistence::printElementList(const QList<Element> &elementList) const
+void Persistence::printElementList(const QList<OptionInfo> &elementList) const
 {
     qDebug() << "Element list :" << endl << "Column name, bind String, value" << endl << "----------------------------------------------------";
-    for (Element element : elementList) {
+    for (OptionInfo element : elementList) {
         qDebug() << element.columnName << ", " << element.bindString << ", " << element.value;
     }
 }

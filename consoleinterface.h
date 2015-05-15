@@ -1,6 +1,12 @@
 #ifndef CONSOLEINTERFACE_H
 #define CONSOLEINTERFACE_H
 
+/* ----------------------------------------------------------------------
+ * Class ConsoleInterface
+ * ----------------------------------------------------------------------
+ * Provides functions to output messages, help text and results.
+ */
+
 #include "columnwidth.h"
 #include "persistence.h"
 #include <QTextStream>

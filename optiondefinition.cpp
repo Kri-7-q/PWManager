@@ -14,6 +14,7 @@ OptionDefinition::OptionDefinition(const char option, const QVariant::Type dataT
 
 }
 
+// Destructor
 OptionDefinition::~OptionDefinition()
 {
 

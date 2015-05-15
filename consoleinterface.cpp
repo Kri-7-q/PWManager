@@ -1,5 +1,6 @@
 #include "consoleinterface.h"
 
+// Constructor
 ConsoleInterface::ConsoleInterface() :
     outStream(stdout)
 {
@@ -26,6 +27,9 @@ void ConsoleInterface::printError(const QString &errorMsg)
  */
 void ConsoleInterface::printSingleAccount(const Account &account)
 {
+    if (account.isEmpty()) {
+        return;
+    }
     ColumnWidth columnWidth;
     QStringList keyList = account.keys();
     for (QString key : keyList) {

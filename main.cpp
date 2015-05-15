@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 {
     ConsoleInterface userInterface;
 
+    // Make sure that a parameter is given.
     char *commandString;
     if (argc < 2) {
         commandString = "help";
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
         commandString = argv[1];
     }
 
-    // Get command
+    // Get command (first parameter after application name)
     AppCommand appCommand(commandString);
     AppCommand::Command command = appCommand.command();
     if (command == AppCommand::Help) {

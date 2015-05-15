@@ -1,6 +1,16 @@
 #ifndef OPTIONDEFINITION_H
 #define OPTIONDEFINITION_H
 
+/* ------------------------------------------------------
+ * Class OptionDefinition
+ * ------------------------------------------------------
+ * Class to define one option of this appliication.
+ * Option needs a character to set it on the command line.
+ * These option can be a single character or a long name.
+ * The options value type can be chosen. Posible value
+ * typse are the typse of QVariant.
+ */
+
 #include <QVariant>
 #include <QString>
 

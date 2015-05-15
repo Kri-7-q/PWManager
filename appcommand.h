@@ -1,6 +1,24 @@
 #ifndef MANAGERCOMMAND_H
 #define MANAGERCOMMAND_H
 
+/* -----------------------------------------------------------------
+ * Class AppCommand
+ * -----------------------------------------------------------------
+ * The class takes the first parameter of command line input.
+ * These parameter should contain a command for this application.
+ * The following commands are available :
+ * - new
+ * - show
+ * - modify
+ * - generatepw
+ * - remove
+ * - help
+ *
+ * Each of these commands takes a specified set of options. the
+ * option set are given here.
+ * Additionaly the class provides help texts to the commands.
+ */
+
 #include "optiondefinition.h"
 #include <QStringList>
 

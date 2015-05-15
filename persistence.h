@@ -2,7 +2,7 @@
 #define PERSISTENCE_H
 
 #include "columnwidth.h"
-#include "element.h"
+#include "optioninfo.h"
 #include "optiontable.h"
 #include <QStringList>
 #include <QSqlDatabase>
@@ -37,20 +37,20 @@ private:
     QString m_errorString;
 
     // Methods
-    QString sqlColumnsToQuery(const QList<Element> &elementList) const;
-    QString bindStringList(QList<Element> &elementList) const;
-    QString sqlWhere(QList<Element> &elementList, const bool identifyRecord = false) const;
+    QString sqlColumnsToQuery(const QList<OptionInfo> &elementList) const;
+    QString bindStringList(QList<OptionInfo> &elementList) const;
+    QString sqlWhere(QList<OptionInfo> &elementList, const bool identifyRecord = false) const;
     QList<Account> getAccountList(QSqlQuery &query);
     QStringList optionToDatabaseNames(QList<char> &optionList);
-    QString sqlInsertInto(QList<Element> &elementList) const;
-    QString sqlUpdateSet(QList<Element> &elementList) const;
-    QList<Element> parseOptionTable(const OptionTable &optionTable) const;
-    QString sqlSelectFrom(QList<Element> &elementList, const bool hasNoWhereClause) const;
-    void bindValuesToQuery(QSqlQuery &query, const QList<Element> &elementList) const;
-    QString sqlDeleteFrom(QList<Element> &elementList) const;
-    QString updateToupleList(QList<Element> &elementList) const;
+    QString sqlInsertInto(QList<OptionInfo> &elementList) const;
+    QString sqlUpdateSet(QList<OptionInfo> &elementList) const;
+    QList<OptionInfo> parseOptionTable(const OptionTable &optionTable) const;
+    QString sqlSelectFrom(QList<OptionInfo> &elementList, const bool hasNoWhereClause) const;
+    void bindValuesToQuery(QSqlQuery &query, const QList<OptionInfo> &elementList) const;
+    QString sqlDeleteFrom(QList<OptionInfo> &elementList) const;
+    QString updateToupleList(QList<OptionInfo> &elementList) const;
 
-    void printElementList(const QList<Element> &elementList) const;
+    void printElementList(const QList<OptionInfo> &elementList) const;
 
 public:
     //Static

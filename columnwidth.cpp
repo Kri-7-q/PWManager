@@ -1,5 +1,6 @@
 #include "columnwidth.h"
 
+// Constructor
 ColumnWidth::ColumnWidth()
 {
 }
@@ -8,8 +9,6 @@ ColumnWidth::ColumnWidth()
  * Takes a width value to a column.
  * If width value is greater then the current
  * value then the width will be set.
- * Method to get the column width among a list
- * of Account objects.
  * The columns name is the minimum width for a
  * column.
  * Includes a leading and following space.
@@ -33,7 +32,9 @@ void ColumnWidth::insertWidthValue(const QString &column, const int width)
 /**
  * OVERLOAD
  * Takes a QVariant value and converts it to a string.
- * String length is inserted to the hashtable.
+ * If the string length is greater than any forther string
+ * that length value will be stored as current Column
+ * width.
  * @param column
  * @param value
  */
@@ -45,7 +46,7 @@ void ColumnWidth::insertWidthValue(const QString &column, const QVariant &value)
 }
 
 /**
- * Return the width of a clumn.
+ * Return the width of a column.
  * @param column
  * @return
  */
@@ -72,11 +73,11 @@ int ColumnWidth::totalWidth() const
 
 /**
  * Get the amount of space which is needed to fill the value string
- * to fill the column width.
- * Calculation for one space left margin.
+ * to fill the column to its width.
+ * Calculation for one space as left margin.
  * @param column
  * @param value
- * @return
+ * @return          The amount of white space to fill the column.
  */
 int ColumnWidth::spaceToFillColumn(const QString &column, const QString &value) const
 {

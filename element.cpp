@@ -1,12 +1,21 @@
-#include "element.h"
+#include "optioninfo.h"
 
-Element::Element() :
+
+// Constructor
+OptionInfo::OptionInfo() :
     isIdentifier(false)
 {
 
 }
 
-Element::Element(QString columnName, QVariant value, bool isIdentifier) :
+/**
+ * Constructor
+ * Constructs an OptionInfo instance with values.
+ * @param columnName        A database column name.
+ * @param value             A value to a database column.
+ * @param isIdentifier      True if column can alone or in combination with others identify an database entry.
+ */
+OptionInfo::OptionInfo(QString columnName, QVariant value, bool isIdentifier) :
     isIdentifier(isIdentifier),
     columnName(columnName),
     value(value)
@@ -14,7 +23,14 @@ Element::Element(QString columnName, QVariant value, bool isIdentifier) :
 
 }
 
-Element::Element(QString columnName, QString bindString, QVariant value, bool isIdentifier) :
+/**
+ * Constructor
+ * @param columnName
+ * @param bindString        A string as placeholder to bind values in prepared SQL statements.
+ * @param value
+ * @param isIdentifier
+ */
+OptionInfo::OptionInfo(QString columnName, QString bindString, QVariant value, bool isIdentifier) :
     columnName(columnName),
     bindString(bindString),
     value(value),
@@ -23,7 +39,8 @@ Element::Element(QString columnName, QString bindString, QVariant value, bool is
 
 }
 
-Element::~Element()
+// Destructor
+OptionInfo::~OptionInfo()
 {
 
 }

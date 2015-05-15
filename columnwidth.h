@@ -1,6 +1,14 @@
 #ifndef COLUMNWIDTH_H
 #define COLUMNWIDTH_H
 
+/* ---------------------------------------------------------------------------
+ * Class ColumnWidth
+ * ---------------------------------------------------------------------------
+ * The class calculates the width of all output columns.
+ * The width of a column depents on the longest entry in a
+ * column of read data.
+ */
+
 #include <QHash>
 #include <QStringList>
 #include <QVariant>
