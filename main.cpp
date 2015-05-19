@@ -13,11 +13,9 @@ int main(int argc, char *argv[])
     ConsoleInterface userInterface;
 
     // Make sure that a parameter is given.
-    char *commandString;
-    if (argc < 2) {
-        commandString = "help";
-    } else {
-        commandString = argv[1];
+    QString commandString("help");
+    if (argc > 1) {
+        commandString = QString(argv[1]);
     }
 
     // Get command (first parameter after application name)
@@ -82,8 +80,7 @@ int main(int argc, char *argv[])
             userInterface.printError(database.errorMessage());
             break;
         }
-        ColumnWidth columnWidth = database.columnWidthTable();
-        userInterface.printAccountList(list, columnWidth);
+        userInterface.printAccountList(list);
         break;
     }
     case AppCommand::Remove: {

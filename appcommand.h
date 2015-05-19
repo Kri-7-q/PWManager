@@ -25,7 +25,7 @@
 class AppCommand
 {
 public:
-    AppCommand(const char *parameter);
+    AppCommand(const QString &parameter);
     ~AppCommand();
 
     enum Command { None, New, GeneratePW, Show, Remove, Modify, Help };
@@ -39,7 +39,7 @@ public:
     QStringList getHelpText();
 
 private:
-    Command parseCommand(const char *parameter);
+    Command parseCommand(const QString &parameter);
 
     QStringList getHelpInGeneral();
     QStringList getHelpForNew();
@@ -49,16 +49,16 @@ private:
     QStringList getHelpForRemove();
 
     // Help text constants
-    const QString optI = "  -i              The index of an account in the database.\n";
-    const QString optP = "  -p              The name of a provider where the account is used.\n";
-    const QString optU = "  -u              The user name which is used for login.\n";
-    const QString optK = "  -k              Password (Keyword) which is used for login.\n";
-    const QString optQ = "  -q              A question to indentify when forgot the password.\n";
-    const QString optAnswer = "  --answer -r     The answer to the question.\n";
-    const QString optA = "  -a              To show all of an account.\n";
-    const QString optL = "  -l              Set the length of the password.\n";
-    const QString optS = "  -s              Define the characters to use in password generation.\n                  for instance : 3[a-z]7{235njbccsv#+<>}6[A-Z]\n";
-    const QString optAll = "  --all -e        To get all stored accounts.\n";
+    static const QString optI;
+    static const QString optP;
+    static const QString optU;
+    static const QString optK;
+    static const QString optQ;
+    static const QString optAnswer;
+    static const QString optA;
+    static const QString optL;
+    static const QString optS;
+    static const QString optAll;
 
 };
 

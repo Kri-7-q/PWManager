@@ -1,10 +1,22 @@
 #include "appcommand.h"
 
+const QString AppCommand::optI = "  -i              The index of an account in the database.\n";
+const QString AppCommand::optP = "  -p              The name of a provider where the account is used.\n";
+const QString AppCommand::optU = "  -u              The user name which is used for login.\n";
+const QString AppCommand::optK = "  -k              Password (Keyword) which is used for login.\n";
+const QString AppCommand::optQ = "  -q              A question to indentify when forgot the password.\n";
+const QString AppCommand::optAnswer = "  --answer -r     The answer to the question.\n";
+const QString AppCommand::optA = "  -a              To show all of an account.\n";
+const QString AppCommand::optL = "  -l              Set the length of the password.\n";
+const QString AppCommand::optS = "  -s              Define the characters to use in password generation.\n                  for instance : 3[a-z]7{235njbccsv#+<>}6[A-Z]\n";
+const QString AppCommand::optAll = "  --all -e        To get all stored accounts.\n";
+
+
 /**
  * Constructor
  * @param parameter The first parameter of command line input.
  */
-AppCommand::AppCommand(const char *parameter)
+AppCommand::AppCommand(const QString &parameter)
 {
     m_command = parseCommand(parameter);
 }
@@ -109,7 +121,7 @@ QStringList AppCommand::getHelpText()
  * It should fit to one of the applications commands.
  * @return
  */
-AppCommand::Command AppCommand::parseCommand(const char *parameter)
+AppCommand::Command AppCommand::parseCommand(const QString &parameter)
 {
     QString commandString = QString(parameter).toLower();
     if (commandString == "new") {

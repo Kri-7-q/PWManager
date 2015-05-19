@@ -1,8 +1,6 @@
 #include "persistence.h"
 
 Persistence::Persistence() :
-    m_primaryKey("id"),
-    m_unique(QStringList() << QString("provider") << QString("username")),
     m_tableName("account"),
     m_databaseName("pwmanager")
 {
@@ -303,7 +301,6 @@ QList<Account> Persistence::getAccountList(QSqlQuery &query)
         Account account;
         for (QString column : columnList) {
             QVariant value = query.value(column);
-            m_columnWidth.insertWidthValue(column, value);
             account.insert(column, value);
         }
         list << account;

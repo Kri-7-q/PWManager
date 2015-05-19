@@ -1,5 +1,13 @@
 #include "consoleinterface.h"
 
+
+const QString ConsoleInterface::m_colorRed = QString("e\[0,31m");
+const QString ConsoleInterface::m_colorGreen = "\e[0,32m";
+const QString ConsoleInterface::m_colorLBlue = "\e[0,34m";
+const QString ConsoleInterface::m_colorStandard = "\e[0,0m";
+const char ConsoleInterface::printOrder[] = {'i', 'p', 'u', 'k', 'l', 's', 'q', 'r', 't', 0};
+
+
 // Constructor
 ConsoleInterface::ConsoleInterface() :
     outStream(stdout)
@@ -71,15 +79,16 @@ void ConsoleInterface::printSuccessMsg(const QString &message)
  * @param accountList
  * @param columnWidth
  */
-void ConsoleInterface::printAccountList(const QList<Account> &accountList, const ColumnWidth &columnWidth)
+void ConsoleInterface::printAccountList(const QList<Account> &accountList)
 {
     if (accountList.isEmpty()) {
         outStream << 'n';
         return;
     }
-    printTableHeader(accountList[0], columnWidth);
+    ColumnWidth tableLayout = getTableLayout(accountList);
+    printTableHeader(accountList[0], tableLayout);
     for (Account account : accountList) {
-        printAccount(account, columnWidth);
+        printAccount(account, tableLayout);
     }
 }
 
@@ -163,4 +172,23 @@ void ConsoleInterface::printAccount(const Account &account, const ColumnWidth &c
     }
     outStream << '\n';
     outStream << horzLine;
+}
+
+/**
+ * Calculate column width of table.
+ * Find longest entry to fit column width.
+ * Minimum size is width of column header name.
+ * @param accountList
+ * @return
+ */
+ColumnWidth ConsoleInterface::getTableLayout(const QList<Account> &accountList)
+{
+    ColumnWidth tableLayout;
+    for (Account account : accountList) {
+        for (QString column : account.keys()) {
+            tableLayout.insertWidthValue(column, account.value(column));
+        }
+    }
+
+    return tableLayout;
 }

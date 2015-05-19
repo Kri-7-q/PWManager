@@ -1,7 +1,6 @@
 #ifndef PERSISTENCE_H
 #define PERSISTENCE_H
 
-#include "columnwidth.h"
 #include "optioninfo.h"
 #include "optiontable.h"
 #include <QStringList>
@@ -25,15 +24,11 @@ public:
     int deleteAccount(const OptionTable &optionTable);
     bool modifyAccount(OptionTable optionTable);
     Account passwordDefinition(const OptionTable &optionTable);
-    ColumnWidth columnWidthTable() const                   { return m_columnWidth; }
     bool hasError() const                                   { return !m_errorString.isEmpty(); }
 
 private:
-    const QString m_primaryKey;
-    const QStringList m_unique;
     const QString m_tableName;
     const QString m_databaseName;
-    ColumnWidth m_columnWidth;
     QString m_errorString;
 
     // Methods
