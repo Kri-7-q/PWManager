@@ -56,9 +56,10 @@ int main(int argc, char *argv[])
             optionTable.insert('k', QVariant(password));
         }
         userInterface.printOptionTable(optionTable);
-        Persistence database;
         optionTable.insert('t', QVariant(QDateTime::currentDateTime()));
-        bool result = database.persistAccount(optionTable);
+        Persistence database;
+        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        bool result = database.persistAccount(valueList);
         if (result) {
             userInterface.printSuccessMsg("Account successfully persisted.\n");
         } else {
@@ -75,7 +76,8 @@ int main(int argc, char *argv[])
             optionTable.insertStandardOptionForShow();
         }
         Persistence database;
-        QList<Account> list = database.findAccount(optionTable);
+        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        QList<Account> list = database.findAccount(valueList, optionTable.contains('e'));
         if (database.hasError()) {
             userInterface.printError(database.errorMessage());
             break;
@@ -85,7 +87,8 @@ int main(int argc, char *argv[])
     }
     case AppCommand::Remove: {
         Persistence database;
-        int rowsRemoved = database.deleteAccount(optionTable);
+        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        int rowsRemoved = database.deleteAccount(valueList);
         if (database.hasError()) {
             userInterface.printError(database.errorMessage());
         } else {
@@ -95,9 +98,10 @@ int main(int argc, char *argv[])
         break;
     }
     case AppCommand::Modify: {
-        Persistence database;
         optionTable.insert('t', QDateTime::currentDateTime());
-        if (database.modifyAccount(optionTable)) {
+        Persistence database;
+        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        if (database.modifyAccount(valueList)) {
             userInterface.printSuccessMsg("Account object successfully updated.\n");
         } else {
             userInterface.printError("Account could not be updated !\n");
@@ -109,7 +113,8 @@ int main(int argc, char *argv[])
         Persistence database;
         // If not have new password definition then get it from database.
         if (! optionTable.contains('l') && ! optionTable.contains('s')) {
-            Account pwDefinition = database.passwordDefinition(optionTable);
+            QList<DBValue> valueList = database.parseOptionTable(optionTable);
+            Account pwDefinition = database.passwordDefinition(valueList);
             if (pwDefinition.isEmpty()) {
                 userInterface.printError("Could not read password definition.\n");
                 return -1;
@@ -131,7 +136,8 @@ int main(int argc, char *argv[])
         }
         optionTable.insert('k', password);
         optionTable.insert('t', QDateTime::currentDateTime());
-        if (database.modifyAccount(optionTable)) {
+        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        if (database.modifyAccount(valueList)) {
             userInterface.printSuccessMsg("New password generated and stored into database.\n");
         } else {
             userInterface.printError("Could not store new password into database !\n");

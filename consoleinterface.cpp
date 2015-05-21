@@ -40,7 +40,7 @@ void ConsoleInterface::printSingleAccount(const Account &account)
     }
     ColumnWidth columnWidth;
     QStringList keyList = account.keys();
-    for (QString key : keyList) {
+    foreach (const QString key, keyList) {
         QVariant valueVariant = account.value(key);
         QString value = valueVariant.toString();
         columnWidth.insertWidthValue(key, value.length());
@@ -57,7 +57,7 @@ void ConsoleInterface::printSingleAccount(const Account &account)
 void ConsoleInterface::printHelp(const QStringList &help)
 {
     outStream << '\n';
-    for (QString line : help) {
+    foreach (const QString line, help) {
         outStream << line;
     }
     outStream << '\n';
@@ -87,7 +87,7 @@ void ConsoleInterface::printAccountList(const QList<Account> &accountList)
     }
     ColumnWidth tableLayout = getTableLayout(accountList);
     printTableHeader(accountList[0], tableLayout);
-    for (Account account : accountList) {
+    foreach (const Account account, accountList) {
         printAccount(account, tableLayout);
     }
 }
@@ -100,7 +100,7 @@ void ConsoleInterface::printOptionTable(const QHash<char, QVariant> optionTable)
 {
     Account account;
     QList<char> keyList = optionTable.keys();
-    for (char key : keyList) {
+    foreach (const char key, keyList) {
         QString keyName = Persistence::databaseNameOfOption(key);
         QVariant value = optionTable.value(key);
         account.insert(keyName, value);
@@ -141,7 +141,7 @@ void ConsoleInterface::printTableHeader(const Account &account, const ColumnWidt
     outStream << '\n';
     outStream << horzLine;
     outStream << "|";
-    for (QString column : m_printOrderList) {
+    foreach (const QString column, m_printOrderList) {
         if (account.contains(column)) {
             QString fillSpace = QString(columnWidth.spaceToFillColumn(column, column), space);
             outStream << ' ' << m_colorLBlue << column << m_colorStandard << fillSpace << '|';
@@ -162,7 +162,7 @@ void ConsoleInterface::printAccount(const Account &account, const ColumnWidth &c
     QChar space(' ');
     QString horzLine = QString(columnWidth.totalWidth(), line).append('\n');
     outStream << '|';
-    for (QString column : m_printOrderList) {
+    foreach (const QString column, m_printOrderList) {
         if (account.contains(column)) {
             QVariant value = account.value(column);
             QString valueString = value.toString();
@@ -184,8 +184,8 @@ void ConsoleInterface::printAccount(const Account &account, const ColumnWidth &c
 ColumnWidth ConsoleInterface::getTableLayout(const QList<Account> &accountList)
 {
     ColumnWidth tableLayout;
-    for (Account account : accountList) {
-        for (QString column : account.keys()) {
+    foreach (const Account account, accountList) {
+        foreach (const QString column, account.keys()) {
             tableLayout.insertWidthValue(column, account.value(column));
         }
     }
