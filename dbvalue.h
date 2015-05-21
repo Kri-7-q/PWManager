@@ -1,6 +1,19 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
+/* ----------------------------------------------------------------------
+ * Class DBValue
+ * ----------------------------------------------------------------------
+ * Takes a value to store in database and keeps additional information
+ * to each value.
+ * Additional information :
+ * - database column name
+ * - marks values which can identify a database record
+ * - takes a bind string for prepared statements
+ * Do not set a bind string manually. Bind strings are set while creating
+ * SQL statememts.
+ */
+
 #include <QString>
 #include <QVariant>
 

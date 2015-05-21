@@ -10,8 +10,11 @@ public:
     OptionTable();
     ~OptionTable();
 
+    // Application specific methods
     void replaceOptionA();
     void insertStandardOptionForShow();
+    bool hasValueForKey(const char key) const;
+    bool hasValuesForKeySet(const QByteArray &keySet) const;
 };
 
 #endif // OPTIONTABLE_H

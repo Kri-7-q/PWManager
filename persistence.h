@@ -24,10 +24,12 @@ public:
     int deleteAccount(QList<DBValue> &elementList);
     bool modifyAccount(QList<DBValue> &elementList);
     Account passwordDefinition(QList<DBValue> &valueList);
-    QList<DBValue> parseOptionTable(const OptionTable &optionTable) const;
+    QList<DBValue> valueListFromOptionTable(const OptionTable &optionTable) const;
     bool hasError() const                                   { return !m_errorString.isEmpty(); }
 
 private:
+    const char m_primaryKey;
+    const QByteArray m_uniqueKey;
     const QString m_tableName;
     const QString m_databaseName;
     QString m_errorString;
@@ -45,6 +47,7 @@ private:
     QString sqlDeleteFrom(QList<DBValue> &elementList) const;
     QString updateToupleList(QList<DBValue> &elementList) const;
 
+    // Debug method
     void printElementList(const QList<DBValue> &elementList) const;
 
 public:

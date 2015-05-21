@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         userInterface.printOptionTable(optionTable);
         optionTable.insert('t', QVariant(QDateTime::currentDateTime()));
         Persistence database;
-        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        QList<DBValue> valueList = database.valueListFromOptionTable(optionTable);
         bool result = database.persistAccount(valueList);
         if (result) {
             userInterface.printSuccessMsg("Account successfully persisted.\n");
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
             optionTable.insertStandardOptionForShow();
         }
         Persistence database;
-        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        QList<DBValue> valueList = database.valueListFromOptionTable(optionTable);
         QList<Account> list = database.findAccount(valueList, optionTable.contains('e'));
         if (database.hasError()) {
             userInterface.printError(database.errorMessage());
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     }
     case AppCommand::Remove: {
         Persistence database;
-        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        QList<DBValue> valueList = database.valueListFromOptionTable(optionTable);
         int rowsRemoved = database.deleteAccount(valueList);
         if (database.hasError()) {
             userInterface.printError(database.errorMessage());
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     case AppCommand::Modify: {
         optionTable.insert('t', QDateTime::currentDateTime());
         Persistence database;
-        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        QList<DBValue> valueList = database.valueListFromOptionTable(optionTable);
         if (database.modifyAccount(valueList)) {
             userInterface.printSuccessMsg("Account object successfully updated.\n");
         } else {
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
         Persistence database;
         // If not have new password definition then get it from database.
         if (! optionTable.contains('l') && ! optionTable.contains('s')) {
-            QList<DBValue> valueList = database.parseOptionTable(optionTable);
+            QList<DBValue> valueList = database.valueListFromOptionTable(optionTable);
             Account pwDefinition = database.passwordDefinition(valueList);
             if (pwDefinition.isEmpty()) {
                 userInterface.printError("Could not read password definition.\n");
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
         }
         optionTable.insert('k', password);
         optionTable.insert('t', QDateTime::currentDateTime());
-        QList<DBValue> valueList = database.parseOptionTable(optionTable);
+        QList<DBValue> valueList = database.valueListFromOptionTable(optionTable);
         if (database.modifyAccount(valueList)) {
             userInterface.printSuccessMsg("New password generated and stored into database.\n");
         } else {

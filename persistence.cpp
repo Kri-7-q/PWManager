@@ -2,7 +2,9 @@
 
 Persistence::Persistence() :
     m_tableName("account"),
-    m_databaseName("pwmanager")
+    m_databaseName("pwmanager"),
+    m_primaryKey('i'),
+    m_uniqueKey(QByteArray().append('p').append('u'))
 {
     addDatabase("local", m_databaseName, "localhost", 3306, "root", "postgres");
 }
@@ -262,10 +264,7 @@ QString Persistence::sqlWhere(QList<DBValue> &valueList, const bool identifyReco
     QString whereClause;
     for (int i=0; i<valueList.size(); ++i) {
         DBValue &value = valueList[i];
-        if (identifyRecord && !value.isIdentifier) {
-            continue;
-        }
-        if (!value.value.isValid()) {
+        if ( (identifyRecord && !value.isIdentifier) || !value.value.isValid() ) {
             continue;
         }
         value.bindString = QString(":").append(value.columnName);
@@ -274,6 +273,9 @@ QString Persistence::sqlWhere(QList<DBValue> &valueList, const bool identifyReco
     if (!whereClause.isEmpty()) {
         whereClause.prepend(" WHERE ");
         whereClause.remove(whereClause.length()-4, 5);
+    }
+    if (whereClause.isEmpty() && identifyRecord) {
+        whereClause = QString(" WHERE FALSE");
     }
 
     return whereClause;
@@ -362,37 +364,34 @@ QString Persistence::sqlUpdateSet(QList<DBValue> &elementList) const
  * @param optionTable
  * @return
  */
-QList<DBValue> Persistence::parseOptionTable(const OptionTable &optionTable) const
+QList<DBValue> Persistence::valueListFromOptionTable(const OptionTable &optionTable) const
 {
-    OptionTable optionTableCopy(optionTable);
-    QList<DBValue> elementList;
-    if (optionTableCopy.value('i').isValid()) {
-        QVariant value = optionTableCopy.take('i');
-        QString column = databaseNameOfOption('i');
-        DBValue id(column, value, true);
-        elementList << id;
-    }
-    else if (optionTableCopy.value('p').isValid() && optionTableCopy.value('u').isValid()) {
-        QVariant value = optionTableCopy.take('p');
-        QString column = databaseNameOfOption('p');
-        DBValue provider(column, value, true);
-        elementList << provider;
-        value = optionTableCopy.take('u');
-        column = databaseNameOfOption('u');
-        DBValue username(column, value, true);
-        elementList << username;
-    }
-    foreach (const char option, optionTableCopy.keys()) {
+    QList<DBValue> valueList;
+    bool hasPrimaryKey = optionTable.hasValueForKey(m_primaryKey);
+    bool hasUnique = optionTable.hasValuesForKeySet(m_uniqueKey);
+
+    foreach (const char option, optionTable.keys()) {
         QString column = databaseNameOfOption(option);
         if (column.isEmpty()) {
             continue;
         }
-        QVariant value = optionTableCopy.value(option);
-        DBValue e(column, value, false);
-        elementList << e;
+        QVariant value = optionTable.value(option);
+        DBValue dbValue(column, value, false);
+        switch (option) {
+        case 'i':
+            dbValue.isIdentifier = hasPrimaryKey;
+            break;
+        case 'p':
+        case 'u':
+            dbValue.isIdentifier = hasUnique && !hasPrimaryKey;
+            break;
+        default:
+            break;
+        }
+        valueList << dbValue;
     }
 
-    return elementList;
+    return valueList;
 }
 
 /**
