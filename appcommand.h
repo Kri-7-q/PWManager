@@ -47,19 +47,6 @@ private:
     QStringList getHelpForModify();
     QStringList getHelpForShow();
     QStringList getHelpForRemove();
-
-    // Help text constants
-    static const QString optI;
-    static const QString optP;
-    static const QString optU;
-    static const QString optK;
-    static const QString optQ;
-    static const QString optAnswer;
-    static const QString optA;
-    static const QString optL;
-    static const QString optS;
-    static const QString optAll;
-
 };
 
 #endif // MANAGERCOMMAND_H

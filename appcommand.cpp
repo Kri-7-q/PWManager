@@ -1,16 +1,5 @@
 #include "appcommand.h"
 
-const QString AppCommand::optI = "  -i              The index of an account in the database.\n";
-const QString AppCommand::optP = "  -p              The name of a provider where the account is used.\n";
-const QString AppCommand::optU = "  -u              The user name which is used for login.\n";
-const QString AppCommand::optK = "  -k              Password (Keyword) which is used for login.\n";
-const QString AppCommand::optQ = "  -q              A question to indentify when forgot the password.\n";
-const QString AppCommand::optAnswer = "  --answer -r     The answer to the question.\n";
-const QString AppCommand::optA = "  -a              To show all of an account.\n";
-const QString AppCommand::optL = "  -l              Set the length of the password.\n";
-const QString AppCommand::optS = "  -s              Define the characters to use in password generation.\n                  for instance : 3[a-z]7{235njbccsv#+<>}6[A-Z]\n";
-const QString AppCommand::optAll = "  --all -e        To get all stored accounts.\n";
-
 
 /**
  * Constructor
@@ -150,16 +139,16 @@ AppCommand::Command AppCommand::parseCommand(const QString &parameter)
 QStringList AppCommand::getHelpInGeneral()
 {
     QStringList help;
-    help << "pwmanager [command] [options]\n";
-    help << "pwmanager [command] --help\n";
+    help << "pwmanager <command> <options>\n";
+    help << "pwmanager <command> --help\n";
     help << "   Commands :  Help, New, GeneratePW, Show, Modify, Remove\n\n";
     help << "   help        Shows this help text.\n";
-    help << "               --help has the same effect.\n";
     help << "   new         Adds a new account to database.\n";
     help << "   generatepw  Generates a new password for an existing account.\n";
     help << "   show        To show one or more accounts.\n";
     help << "   modify      Modifies an existing account.\n";
     help << "   remove      Removes an existing account from database.\n";
+    help << "   --help      Shows a help text to the command.\n";
 
     return help;
 }
@@ -171,9 +160,19 @@ QStringList AppCommand::getHelpInGeneral()
 QStringList AppCommand::getHelpForNew()
 {
     QStringList help;
-    help << "pwmanager new [options]\n";
+    help << "pwmanager new <options>\n";
     help << "Insert a new account into database.\n\n";
-    help << optP << optU << "optional\n" << optK << optQ << optAnswer << optL << optS;
+    help << "  -p <name>        The name of a provider, Webpage, Device ...\n";
+    help << "  -u <name>        A username to login.\n";
+    help << "optional\n";
+    help << "  -k <password>    An existing password to store.\n";
+    help << "  -q <quetion>     Security question if you can't remember the password.\n";
+    help << "  -r <answer>      An answer (replay) to the security question.\n";
+    help << "  -l <length>      The length of passwort when generate any.\n";
+    help << "  -s <definition>  A definition string with characters to generate a passwort.\n";
+    help << "                   For instance : 6[A-Z]8[a-z]*[0-9]4{+#-.,<>()}\n";
+    help << "                   [] Range of characters, {} set of characters, * wildcard for amount\n";
+    help << "  --answer <answer>    Same as option -r.\n";
 
     return help;
 }
@@ -185,9 +184,19 @@ QStringList AppCommand::getHelpForNew()
 QStringList AppCommand::getHelpForGeneratePW()
 {
     QStringList help;
-    help << "pwmanager generatepw [options]\n";
-    help << "Generates a new passwort for an given account.\n\n";
-    help << optI << optP << optU << "optional\n" << optL << optS;
+    help << "pwmanager generatepw <options>\n";
+    help << "Generates a new passwort for an given account.\n";
+    help << "If no length an character set is given application will try\n\n";
+    help << "to read them from database.\n";
+    help << "  -i <id>          The id (primary key) to identify database entry.\n";
+    help << "or\n";
+    help << "  -p <name>        The name of a provider, Webpage, Device ...\n";
+    help << "  -u <name>        A username to login.\n";
+    help << "optional\n";
+    help << "  -l <length>      The length of generated password.\n";
+    help << "  -s <definition>  A character definition. Characters which will be uesd to gnerate password.\n";
+    help << "                   For instance : 6[A-Z]8[a-z]*[0-9]4{+#-.,<>()}\n";
+    help << "                   [] Range of characters, {} set of characters, * wildcard for amount\n";
 
     return help;
 }
@@ -199,9 +208,21 @@ QStringList AppCommand::getHelpForGeneratePW()
 QStringList AppCommand::getHelpForModify()
 {
     QStringList help;
-    help << "pwmanager modify [options]\n";
+    help << "pwmanager modify <options>\n";
     help << "Can modify some values of an account.\n\n";
-    help << optI << optP << optU << "optional\n" << optQ << optAnswer << optK << optL << optS;
+    help << "  -i <id>          The id (primary key) to identify a database entry.\n";
+    help << "or\n";
+    help << "  -p <name>        The name of a provider, Webpage, Device ...\n";
+    help << "  -u <name>        A username to login.\n";
+    help << "optional\n";
+    help << "  -k <password>    An existing password to store.\n";
+    help << "  -q <quetion>     Security question if you can't remember the password.\n";
+    help << "  -r <answer>      An answer to the security question.\n";
+    help << "  -l <length>      The length of passwort when generate any.\n";
+    help << "  -s <definition>  A definition string with characters to generate a passwort.\n";
+    help << "                   For instance : 6[A-Z]8[a-z]*[0-9]4{+#-.,<>()}\n";
+    help << "                   [] Range of characters, {} set of characters, * wildcard for amount\n";
+    help << "  --answer <answer>    Same as option -r.\n";
 
     return help;
 }
@@ -213,9 +234,21 @@ QStringList AppCommand::getHelpForModify()
 QStringList AppCommand::getHelpForShow()
 {
     QStringList help;
-    help << "pwmanager show [options]\n";
-    help << "Shows chosen infomation about one or more accounts.\n\n";
-    help << optP<< optAll << "optional\n" << optU << optI << optK << optQ << optAnswer << optL << optS << optA;
+    help << "pwmanager show <options>\n";
+    help << "Shows chosen infomation about one or more accounts.\n";
+    help << "If to any option a value is given then this value will be used to find a database entry.\n\n";
+    help << "  -i [id]          Show id of database entry or give an id to identify a database entry.\n";
+    help << "  -p [name]        Show the provider name of an account.\n";
+    help << "  -u [name]        Show the username of an account.\n";
+    help << "  -k [password]    Show password of an account.\n";
+    help << "  -q [question]    Show security question of an account.\n";
+    help << "  -r [answer]      Show the answer (replay) to the security question.\n";
+    help << "  -l [length]      Show the length of password when generate.\n";
+    help << "  -s [definition]  Show defined character which are used to generate a password.\n";
+    help << "  -t               Show the time when account was modified last time.\n";
+    help << "  -a               Show all values of an account.\n";
+    help << "  --answer [answer]    Same as option -r.\n";
+    help << "  --all | -e       Show all accounts which are stored in database.\n";
 
     return help;
 }
@@ -227,9 +260,12 @@ QStringList AppCommand::getHelpForShow()
 QStringList AppCommand::getHelpForRemove()
 {
     QStringList help;
-    help << "pwmanager remove [options]\n";
+    help << "pwmanager remove <options>\n";
     help << "Removes an account from database.\n\n";
-    help << optI << "or\n" << optP << optU;
+    help << "  -i <id>          The id (primary key) to identify a database entry.\n";
+    help << "or\n";
+    help << "  -p <name>        The name of a provider, Webpage, Device ...\n";
+    help << "  -u <name>        A username to login.\n";
 
     return help;
 }
