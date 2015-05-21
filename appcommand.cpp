@@ -168,11 +168,11 @@ QStringList AppCommand::getHelpForNew()
     help << "  -k <password>    An existing password to store.\n";
     help << "  -q <quetion>     Security question if you can't remember the password.\n";
     help << "  -r <answer>      An answer (replay) to the security question.\n";
+    help << "  --answer <answer> | --answer=\"answer\" | --answer=<answer>\n";
     help << "  -l <length>      The length of passwort when generate any.\n";
     help << "  -s <definition>  A definition string with characters to generate a passwort.\n";
     help << "                   For instance : 6[A-Z]8[a-z]*[0-9]4{+#-.,<>()}\n";
     help << "                   [] Range of characters, {} set of characters, * wildcard for amount\n";
-    help << "  --answer <answer>    Same as option -r.\n";
 
     return help;
 }
@@ -218,11 +218,11 @@ QStringList AppCommand::getHelpForModify()
     help << "  -k <password>    An existing password to store.\n";
     help << "  -q <quetion>     Security question if you can't remember the password.\n";
     help << "  -r <answer>      An answer to the security question.\n";
+    help << "  --answer <answer> | --answer=\"answer\" | --answer=<answer>\n";
     help << "  -l <length>      The length of passwort when generate any.\n";
     help << "  -s <definition>  A definition string with characters to generate a passwort.\n";
     help << "                   For instance : 6[A-Z]8[a-z]*[0-9]4{+#-.,<>()}\n";
     help << "                   [] Range of characters, {} set of characters, * wildcard for amount\n";
-    help << "  --answer <answer>    Same as option -r.\n";
 
     return help;
 }
@@ -243,11 +243,11 @@ QStringList AppCommand::getHelpForShow()
     help << "  -k [password]    Show password of an account.\n";
     help << "  -q [question]    Show security question of an account.\n";
     help << "  -r [answer]      Show the answer (replay) to the security question.\n";
+    help << "  --answer <answer> | --answer=\"answer\" | --answer=<answer>\n";
     help << "  -l [length]      Show the length of password when generate.\n";
     help << "  -s [definition]  Show defined character which are used to generate a password.\n";
     help << "  -t               Show the time when account was modified last time.\n";
     help << "  -a               Show all values of an account.\n";
-    help << "  --answer [answer]    Same as option -r.\n";
     help << "  --all | -e       Show all accounts which are stored in database.\n";
 
     return help;
