@@ -145,6 +145,18 @@ int main(int argc, char *argv[])
         }
         break;
     }
+    case AppCommand::File:
+        if (optionTable.contains('o')) {
+            optionTable.insert('p', QVariant());
+            optionTable.insert('i', QVariant());
+            optionTable.insert('u', QVariant());
+            optionTable.insert('k', QVariant());
+            Persistence database;
+            QList<DBValue> valueList = database.valueListFromOptionTable(optionTable);
+            QList<Account> accountList = database.findAccount(valueList, false);
+            userInterface.writeToFile(accountList, optionTable.value('f').toString());
+        }
+        break;
     default:
         break;
     }

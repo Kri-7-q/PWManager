@@ -28,7 +28,7 @@ public:
     AppCommand(const QString &parameter);
     ~AppCommand();
 
-    enum Command { None, New, GeneratePW, Show, Remove, Modify, Help };
+    enum Command { None, New, GeneratePW, Show, Remove, Modify, Help, File };
 
 private:
     Command m_command;
@@ -47,6 +47,7 @@ private:
     QStringList getHelpForModify();
     QStringList getHelpForShow();
     QStringList getHelpForRemove();
+    QStringList getHelpForFile();
 };
 
 #endif // MANAGERCOMMAND_H

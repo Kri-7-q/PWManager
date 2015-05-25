@@ -76,6 +76,10 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('u', QVariant::String, QString());
         list << OptionDefinition('h', QVariant::Invalid, QString("help"));
         break;
+    case File:
+        list << OptionDefinition('f', QVariant::String, QString("file"));
+        list << OptionDefinition('o', QVariant::Invalid, QString("out"));
+        list << OptionDefinition('g', QVariant::Invalid, QString("in"));
     default:
         break;
     }
@@ -100,6 +104,8 @@ QStringList AppCommand::getHelpText()
         return getHelpForShow();
     case Remove:
         return getHelpForRemove();
+    case File:
+        return getHelpForFile();
     default:
         return getHelpInGeneral();
     }
@@ -128,6 +134,9 @@ AppCommand::Command AppCommand::parseCommand(const QString &parameter)
     if (commandString == "remove") {
         return Remove;
     }
+    if (commandString == "file") {
+        return File;
+    }
 
     return Help;
 }
@@ -148,6 +157,7 @@ QStringList AppCommand::getHelpInGeneral()
     help << "   show        To show one or more accounts.\n";
     help << "   modify      Modifies an existing account.\n";
     help << "   remove      Removes an existing account from database.\n";
+    help << "   file        Write database content to file. Or read from file.\n";
     help << "   --help      Shows a help text to the command.\n";
 
     return help;
@@ -266,6 +276,25 @@ QStringList AppCommand::getHelpForRemove()
     help << "or\n";
     help << "  -p <name>        The name of a provider, Webpage, Device ...\n";
     help << "  -u <name>        A username to login.\n";
+
+    return help;
+}
+
+/**
+ * Help text for command file.
+ * @return
+ */
+QStringList AppCommand::getHelpForFile()
+{
+    QStringList help;
+    help << "pwmanager file <options>\n";
+    help << "Writes data from database into a file. Or reads from file into database.\n\n";
+    help << "  -f <path>        A full path to the file.\n";
+    help << "  --file <path>  or  --file=<path>\n";
+    help << "  -o               To write database content into a file.\n";
+    help << "  --out\n";
+    help << "  -g               Read (get) data from a file and store it to database.\n";
+    help << "  --in\n";
 
     return help;
 }

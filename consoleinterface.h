@@ -10,6 +10,7 @@
 #include "columnwidth.h"
 #include "persistence.h"
 #include <QTextStream>
+#include <QFile>
 
 typedef QHash<QString, QVariant> Account;
 
@@ -24,6 +25,7 @@ public:
     void printSuccessMsg(const QString &message);
     void printAccountList(const QList<Account> &accountList);
     void printOptionTable(const QHash<char, QVariant> optionTable);
+    void writeToFile(const QList<Account> &accountList, const QString &filepath);
 
 private:
     QTextStream outStream;

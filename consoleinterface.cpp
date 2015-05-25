@@ -109,6 +109,34 @@ void ConsoleInterface::printOptionTable(const QHash<char, QVariant> optionTable)
 }
 
 /**
+ * @brief ConsoleInterface::writeToFile
+ * @param accountList
+ * @param filepath
+ */
+void ConsoleInterface::writeToFile(const QList<Account> &accountList, const QString &filepath)
+{
+    QFile file(filepath);
+    if (! file.open(QFile::ReadWrite)) {
+        outStream << m_colorRed << "Could not open file !" << m_colorStandard << "\n";
+        return;
+    }
+    QDataStream fileStream(&file);
+    foreach (Account account, accountList) {
+        QString record;
+        foreach (QString column, m_printOrderList) {
+            if (account.contains(column)) {
+                record.append(column).append('=').append(account.value(column).toString()).append("  |  ");
+            }
+        }
+        record .append('\n');
+        fileStream << record;
+    }
+    file.close();
+
+    printSuccessMsg(QString("File written.\n"));
+}
+
+/**
  * Get the print order of columns.
  * The option character are translated to column names.
  * Those column names will be stored in a list and in
