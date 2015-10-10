@@ -1,4 +1,5 @@
 #include "persistence.h"
+#include "credentials.h"
 
 Persistence::Persistence() :
     m_tableName("account"),
@@ -6,7 +7,8 @@ Persistence::Persistence() :
     m_primaryKey('i'),
     m_uniqueKey(QByteArray().append('p').append('u'))
 {
-    addDatabase("local", m_databaseName, "localhost", 3306, "root", "postgres");
+    QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL", "local");
+    initializeDatabase(db);
 }
 
 /**
@@ -458,6 +460,22 @@ QString Persistence::updateToupleList(QList<DBValue> &valueList) const
     touple.remove(touple.length()-1, 1);
 
     return touple;
+}
+
+/**
+ * Initializes a database with credentials from file.
+ * @param db
+ */
+void Persistence::initializeDatabase(QSqlDatabase &db) const
+{
+    QString homeDir = Credentials::usersHomePath();
+    QString filePath = homeDir.append(QString("/.pwmanager"));
+    Credentials credentials = Credentials::credentialsFromFile(filePath);
+    db.setDatabaseName(credentials.value(Credentials::DatabaseName));
+    db.setHostName(credentials.value(Credentials::Hostname));
+    db.setUserName(credentials.value(Credentials::Username));
+    db.setPassword(credentials.value(Credentials::Password));
+    db.setPort(credentials.value(Credentials::Port).toInt());
 }
 
 /**

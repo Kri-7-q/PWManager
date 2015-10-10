@@ -46,6 +46,8 @@ private:
     void bindValuesToQuery(QSqlQuery &query, const QList<DBValue> &elementList) const;
     QString sqlDeleteFrom(QList<DBValue> &elementList) const;
     QString updateToupleList(QList<DBValue> &elementList) const;
+    // Initialization
+    void initializeDatabase(QSqlDatabase &db) const;
 
     // Debug method
     void printElementList(const QList<DBValue> &elementList) const;
