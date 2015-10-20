@@ -15,6 +15,9 @@ OptionTable::~OptionTable()
  */
 void OptionTable::replaceOptionA()
 {
+    if (! contains('a')) {
+        return;
+    }
     remove('a');
     QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k' << 'l' << 's' << 'q' << 'r';
     foreach (char option, optionList) {
@@ -25,14 +28,25 @@ void OptionTable::replaceOptionA()
 }
 
 /**
- * @brief OptionTable::insertStandardOptionForShow
+ * Insert ALL options whitout value.
  */
-void OptionTable::insertStandardOptionForShow()
+void OptionTable::replaceOptionE()
 {
-    insert('i', QVariant());
-    insert('p', QVariant());
-    insert('u', QVariant());
-    insert('k', QVariant());
+    if (! contains('e')) {
+        return;
+    }
+    clear();
+    QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k' << 'l' << 's' << 'q' << 'r' << 't';
+    setOptions(optionList);
+}
+
+/**
+ * Insert a set of statandard options without a value.
+ */
+void OptionTable::insertStandardOptions()
+{
+    QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k';
+    setOptions(optionList);
 }
 
 /**
@@ -59,5 +73,16 @@ bool OptionTable::hasValuesForKeySet(const QByteArray &keySet) const
     }
 
     return true;
+}
+
+/**
+ * Insert all options of list without a value.
+ * @param optionList
+ */
+void OptionTable::setOptions(const QList<char> &optionList)
+{
+    foreach (char option, optionList) {
+        insert(option, QVariant());
+    }
 }
 

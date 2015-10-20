@@ -5,8 +5,12 @@
 
 Credentials::Credentials()
 {
-    m_keyNames = QStringList() << QString("password") << QString("username") << QString("databasename")
-                               << QString("hostname") << QString("port");
+    m_keyMap.insert(QString("password"), Password);
+    m_keyMap.insert(QString("username"), Username);
+    m_keyMap.insert(QString("databasename"), DatabaseName);
+    m_keyMap.insert(QString("hostname"), Hostname);
+    m_keyMap.insert(QString("port"), Port);
+    m_keyMap.insert(QString("tablename"), TableName);
 }
 
 /**
@@ -47,10 +51,9 @@ bool Credentials::storeCredentialsToFile(const QString &path)
     QString seperator(":");
     QTextStream outStream(&file);
     QList<Key> keyList = m_credentials.keys();
-    for (int index=0; index<keyList.size(); ++index) {
-        Key key = keyList[index];
-        QString keyString = m_keyNames[key];
-        QString value = m_credentials.value(keyList[index], QString());
+    for (Key key : m_credentials.keys()) {
+        QString keyString = m_keyMap.key(key);
+        QString value = m_credentials.value(key, QString());
         outStream << keyString << seperator << value << endl;
     }
     file.close();
@@ -80,8 +83,9 @@ bool Credentials::loadCredentialsFromFile(const QString &path)
     QTextStream inStream(&file);
     while (! inStream.atEnd()) {
         QString line = inStream.readLine();
+        qDebug() << "Line: " << line;
         QStringList keyValueList = line.split(QChar(':'), QString::SkipEmptyParts);
-        Key key = (Key)m_keyNames.indexOf(keyValueList[0]);
+        Key key = (Key)m_keyMap.value(keyValueList[0]);
         QString value = keyValueList[1];
         m_credentials.insert(key, value);
     }

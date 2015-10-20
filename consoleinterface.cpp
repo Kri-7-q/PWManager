@@ -1,7 +1,7 @@
 #include "consoleinterface.h"
 
 
-const QString ConsoleInterface::m_colorRed = QString("e\[0,31m");
+const QString ConsoleInterface::m_colorRed = "\e[0,31m";
 const QString ConsoleInterface::m_colorGreen = "\e[0,32m";
 const QString ConsoleInterface::m_colorLBlue = "\e[0,34m";
 const QString ConsoleInterface::m_colorStandard = "\e[0,0m";
@@ -101,7 +101,7 @@ void ConsoleInterface::printOptionTable(const QHash<char, QVariant> optionTable)
     Account account;
     QList<char> keyList = optionTable.keys();
     foreach (const char key, keyList) {
-        QString keyName = Persistence::databaseNameOfOption(key);
+        QString keyName = Persistence::columnNameOfOption(key);
         QVariant value = optionTable.value(key);
         account.insert(keyName, value);
     }
@@ -148,7 +148,7 @@ QStringList ConsoleInterface::getPrintOrderForColumns()
     QStringList columnList;
     int index = 0;
     while (printOrder[index] != 0) {
-        QString columnName = Persistence::databaseNameOfOption(printOrder[index]);
+        QString columnName = Persistence::columnNameOfOption(printOrder[index]);
         columnList << columnName;
         ++index;
     }

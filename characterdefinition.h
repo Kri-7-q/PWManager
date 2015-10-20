@@ -36,6 +36,9 @@ public:
     void setAmount(const ushort amount)                 { m_amount = amount; }
     QList<QChar> characterSet() const                   { return m_characterList; }
     bool hasNoAmount() const                            { return m_amount < 1; }
+
+private:
+    void setCharacterRange(const QChar from, const QChar to);
 };
 
 #endif // CHARACTERDEFINITION_H

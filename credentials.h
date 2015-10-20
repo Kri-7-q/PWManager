@@ -3,13 +3,14 @@
 
 #include <QHash>
 #include <QStringList>
+#include <QDebug>
 
 class Credentials
 {
 public:
     Credentials();
 
-    enum Key { Password, Username, DatabaseName, Hostname, Port };
+    enum Key { Password, Username, DatabaseName, Hostname, Port, TableName };
 
     void addValue(const Key key, const QString &value);
     QString value(const Key key) const;
@@ -26,7 +27,7 @@ public:
 
 private:
     QHash<Key, QString> m_credentials;
-    QStringList m_keyNames;
+    QHash<QString, Key> m_keyMap;
     QString m_errorMsg;
 };
 

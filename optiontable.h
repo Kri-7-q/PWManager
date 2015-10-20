@@ -12,9 +12,13 @@ public:
 
     // Application specific methods
     void replaceOptionA();
-    void insertStandardOptionForShow();
+    void replaceOptionE();
+    void insertStandardOptions();
     bool hasValueForKey(const char key) const;
     bool hasValuesForKeySet(const QByteArray &keySet) const;
+
+private:
+    void setOptions(const QList<char>& optionList);
 };
 
 #endif // OPTIONTABLE_H
