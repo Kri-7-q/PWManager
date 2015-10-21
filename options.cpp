@@ -4,10 +4,10 @@
  * Constructor
  * @param validOptions      A string with valid options.
  */
-Options::Options(const QList<OptionDefinition> &validOptions) :
+Options::Options(const QList<OptionDefinition> &definedOptions) :
     m_hasError(false)
 {
-    setValidOptions(validOptions);
+    setDefinedOptions(definedOptions);
 }
 
 /**
@@ -21,11 +21,11 @@ Options::~Options()
 /**
  * Parse command line input for options and its values.
  * Options and values are returned in a QHash object.
- * Where the option is key and value if options value.
+ * Where the option is key and value is options value.
  * @param argc
  * @param argv
- * @param start     At which position in programm parameter is to start.
- * @return
+ * @param start             At which position in programm parameter is to start. (zero based)
+ * @return optionTable      A hash map with options and values.
  */
 OptionTable Options::parseOptions(const int argc, const char * const *argv, const int start)
 {
@@ -33,8 +33,9 @@ OptionTable Options::parseOptions(const int argc, const char * const *argv, cons
     char lastOption;
     for (int index=start; index<argc; ++index) {
         QString parameter(argv[index]);
+        // Is long name option?
         if (parameter.startsWith("--")) {
-            // long option
+            // parameter is a long option. It starts with '--'
             parameter.remove(0, 2);
             bool isOption = parseLongOption(parameter, optionTable, lastOption);
             if (! isOption) {
@@ -42,8 +43,9 @@ OptionTable Options::parseOptions(const int argc, const char * const *argv, cons
             }
             continue;
         }
-        if (argv[index][0] == '-') {
-            // single option
+        // Is normal option?
+        if (parameter.startsWith('-')) {
+            // param starts with '-' that signals one or more options.
             bool isMultiOption = isMultiOptionSet(argv[index]);
             if (isMultiOption) {
                 lastOption = setMultiOption(argv[index], optionTable);
@@ -55,14 +57,14 @@ OptionTable Options::parseOptions(const int argc, const char * const *argv, cons
             }
             continue;
         }
-        // Is value
-        bool lastOptionTakeValue = (m_validOption.value(lastOption, QVariant::Invalid) != QVariant::Invalid);
-        bool hasNoValue = optionTable.value(lastOption, QString()).isNull();
+        // Was not an option its a value.
+        QVariant::Type expectedValueType = m_definedOption.value(lastOption, QVariant::Invalid);
+        bool lastOptionTakeValue = (expectedValueType != QVariant::Invalid);
+        bool hasNoValue = optionTable.hasValueForKey(lastOption);
         if (lastOptionTakeValue && hasNoValue) {
             optionTable.insert(lastOption, parameter);
         } else {
-            m_hasError = true;
-            m_errorMsg.append("Found value without option : " + parameter + "\n");
+            setErrorMessage("Found value without option : " + parameter + "\n");
         }
     }
 
@@ -74,12 +76,12 @@ OptionTable Options::parseOptions(const int argc, const char * const *argv, cons
  * Sets option information to Hashtables.
  * @param validOptions
  */
-void Options::setValidOptions(const QList<OptionDefinition> &validOptions)
+void Options::setDefinedOptions(const QList<OptionDefinition> &definedOptions)
 {
-    for (OptionDefinition definition : validOptions) {
-        m_validOption.insert(definition.option(), definition.dataType());
-        if (definition.hasLongName()) {
-            m_validLongOption.insert(definition.longName(), definition.option());
+    for (OptionDefinition definitionObj : definedOptions) {
+        m_definedOption.insert(definitionObj.option(), definitionObj.dataType());
+        if (definitionObj.hasLongName()) {
+            m_definedLongOption.insert(definitionObj.longName(), definitionObj.option());
         }
     }
 }
@@ -88,25 +90,31 @@ void Options::setValidOptions(const QList<OptionDefinition> &validOptions)
  * Parse parameter for a long option.
  * A '=' can follow a long option. Than
  * the option is fallowed by a value.
+ * Some options can take a value other do not.
  * @param parameter         The command line argument.
  * @param optionTable
  * @return                  True if option and value are valid.
  */
 bool Options::parseLongOption(const QString &parameter, OptionTable &optionTable, char &lastOption)
 {
+    // posible option:     --file=/home/filename.txt
     QStringList paramList = parameter.split('=');
-    if (!m_validLongOption.contains(paramList[0])) {
-        m_hasError = true;
-        m_errorMsg.append("Not a known option : " + paramList[0] + "\n");
+    QString longOption(paramList[0]);
+    QString valueString;
+    if (paramList.size() > 1) {
+        valueString = paramList[1];
+    }
+    if (!m_definedLongOption.contains(longOption)) {
+        setErrorMessage("Not a known option : " + longOption + "\n");
         return false;
     }
-    char option = m_validLongOption.value(paramList[0]);
-    if (paramList.size() > 1) {
-        QVariant value = valueWithType(m_validOption.value(option), paramList[1]);
+    char option = m_definedLongOption.value(longOption);
+    if (! valueString.isEmpty()) {
+        QVariant value = valueWithType(m_definedOption.value(option), valueString);
         optionTable.insert(option, value);
-        if (m_validOption.value(option, QVariant::Invalid) == QVariant::Invalid) {
-            m_hasError = true;
-            m_errorMsg.append("Option '" + paramList[0] + "' does not take a value.\n");
+        QVariant::Type expectedValueType = m_definedOption.value(option, QVariant::Invalid);
+        if (expectedValueType == QVariant::Invalid) {
+            setErrorMessage("Option '" + longOption + "' does not take a value.\n");
         }
     } else {
         optionTable.insert(option, QVariant());
@@ -125,7 +133,7 @@ bool Options::isMultiOptionSet(const char *parameter) const
 {
     int index = 1;
     while (parameter[index] != 0) {
-        if (! m_validOption.contains(parameter[index])) {
+        if (! m_definedOption.contains(parameter[index])) {
             return false;
         }
         ++index;
@@ -156,6 +164,7 @@ char Options::setMultiOption(const char *parameter, OptionTable &optionTable)
 
 /**
  * Splits the option charackter from the value.
+ * If option and value are one string.
  * Inserts if valid the option and its value.
  * @param parameter
  * @param optionTable
@@ -164,17 +173,16 @@ char Options::setMultiOption(const char *parameter, OptionTable &optionTable)
 bool Options::setOptionAndValue(const char *parameter, OptionTable &optionTable)
 {
     char option = parameter[1];
-    if (! m_validOption.contains(option)) {
-        m_hasError = true;
-        m_errorMsg.append(QString("Not a known option : %1\n").arg(option));
+    if (! m_definedOption.contains(option)) {
+        setErrorMessage(QString("Not a known option : %1\n").arg(option));
         return false;
     }
-    if (m_validOption.value(option, QVariant::Invalid) == QVariant::Invalid) {
-        m_hasError = true;
-        m_errorMsg.append(QString("Option '%1' does not take a value.\n").arg(option));
+    QVariant::Type valueType = m_definedOption.value(option, QVariant::Invalid);
+    if (valueType == QVariant::Invalid) {
+        setErrorMessage(QString("Option '%1' does not take a value.\n").arg(option));
     }
     QString valueString = QString(parameter).mid(2);
-    QVariant value = valueWithType(m_validOption.value(option, QVariant::Invalid), valueString);
+    QVariant value = valueWithType(m_definedOption.value(option, QVariant::Invalid), valueString);
     optionTable.insert(option, value);
 
     return true;
@@ -201,4 +209,14 @@ QVariant Options::valueWithType(const QVariant::Type type, const QString value) 
     }
 
     return QVariant();
+}
+
+/**
+ * Set a error message.
+ * @param errorMsg
+ */
+void Options::setErrorMessage(const QString &errorMsg)
+{
+    m_errorMsg.append(errorMsg);
+    m_hasError = true;
 }
