@@ -9,7 +9,6 @@
 #include <QSqlRecord>
 #include <QSqlField>
 #include <QSqlDriver>
-#include <QDebug>
 
 typedef QHash<QString, QVariant> Account;
 

@@ -35,11 +35,10 @@ bool Persistence::persistAccount(const OptionTable &optiontTable)
         return false;
     }
     QSqlRecord insertRecord = recordFromOptionTable(optiontTable);
-    QString selectSql = db.driver()->sqlStatement(QSqlDriver::SelectStatement, m_tableName, insertRecord, true);
+    QString selectSql = db.driver()->sqlStatement(QSqlDriver::InsertStatement, m_tableName, insertRecord, true);
     QSqlQuery query(db);
     bool result = query.prepare(selectSql);
     if (!result) {
-        qDebug() << "SQL query : " << selectSql;
         m_errorString = QString("Persistence:persistAccount() --> SQL query is NOT valid. Could NOT prepare query !");
         db.close();
         return false;
@@ -80,7 +79,6 @@ QList<Account> Persistence::findAccount(const OptionTable& optionTable)
     QSqlQuery query(db);
     bool result = query.prepare(selectSql);
     if (!result) {
-        qDebug() << "Query string : " << selectSql;
         m_errorString = "Persistence:findAccount() --> SQL query is NOT valid. Could NOT prepare query !";
         db.close();
         return QList<Account>();
@@ -121,7 +119,6 @@ int Persistence::deleteAccount(const OptionTable &optionTable)
     QSqlQuery query(db);
     bool result = query.prepare(deleteSql);
     if (!result) {
-        qDebug() << "SQL query : " << deleteSql;
         m_errorString = "Persistence:deleteAccount() --> SQL query is NOT valid. Could not prepare query !";
         db.close();
         return 0;
@@ -159,7 +156,6 @@ bool Persistence::modifyAccount(const OptionTable &optionTable)
     QSqlQuery query(db);
     bool result = query.prepare(modifySql);
     if (!result) {
-        qDebug() << "Sql: " << modifySql;
         m_errorString = "Persistence:modifyAccount() --> SQL query is not valid. Could NOT prepare query !";
         db.close();
         return false;
@@ -197,7 +193,6 @@ Account Persistence::passwordDefinition(const OptionTable &optionTable)
     QSqlQuery query(db);
     bool result = query.prepare(selectSql);
     if (!result) {
-        qDebug() << "Sql: " << selectSql;
         m_errorString = "SQL query is NOT vail. Could not prepare query !";
         db.close();
         return Account();

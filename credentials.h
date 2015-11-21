@@ -3,7 +3,6 @@
 
 #include <QHash>
 #include <QStringList>
-#include <QDebug>
 
 class Credentials
 {

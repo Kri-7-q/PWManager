@@ -80,6 +80,7 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('f', QVariant::String, QString("file"));
         list << OptionDefinition('o', QVariant::Invalid, QString("out"));
         list << OptionDefinition('g', QVariant::Invalid, QString("in"));
+        break;
     default:
         break;
     }

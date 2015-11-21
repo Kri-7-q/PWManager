@@ -46,22 +46,24 @@ OptionTable Options::parseOptions(const int argc, const char * const *argv, cons
         // Is normal option?
         if (parameter.startsWith('-')) {
             // param starts with '-' that signals one or more options.
-            bool isMultiOption = isMultiOptionSet(argv[index]);
-            if (isMultiOption) {
+            if (parameter.length() > 2 && isMultiOptionSet(argv[index])) {
                 lastOption = setMultiOption(argv[index], optionTable);
+                continue;
             } else {
-                lastOption = '\0';
+                lastOption = 0;
                 if (! setOptionAndValue(argv[index], optionTable)) {
                     return optionTable;
                 }
             }
+            lastOption = argv[index][1];
+            optionTable.insert(lastOption, QVariant());
             continue;
         }
         // Was not an option its a value.
         QVariant::Type expectedValueType = m_definedOption.value(lastOption, QVariant::Invalid);
         bool lastOptionTakeValue = (expectedValueType != QVariant::Invalid);
-        bool hasNoValue = optionTable.hasValueForKey(lastOption);
-        if (lastOptionTakeValue && hasNoValue) {
+        bool hasValue = optionTable.hasValueForKey(lastOption);
+        if (lastOptionTakeValue && !hasValue) {
             optionTable.insert(lastOption, parameter);
         } else {
             setErrorMessage("Found value without option : " + parameter + "\n");

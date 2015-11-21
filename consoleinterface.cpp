@@ -1,4 +1,5 @@
 #include "consoleinterface.h"
+#include <QDataStream>
 
 
 const QString ConsoleInterface::m_colorRed = "\e[0,31m";
