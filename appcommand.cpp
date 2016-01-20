@@ -5,7 +5,8 @@
  * Constructor
  * @param parameter The first parameter of command line input.
  */
-AppCommand::AppCommand(const QString &parameter)
+AppCommand::AppCommand(const QString &parameter) :
+    m_optionAll(false)
 {
     m_command = parseCommand(parameter);
 }
@@ -28,58 +29,52 @@ QList<OptionDefinition> AppCommand::commandsOptions()
     QList<OptionDefinition> list;
     switch (m_command) {
     case New:
-        list << OptionDefinition('p', QVariant::String, QString());
-        list << OptionDefinition('u', QVariant::String, QString());
-        list << OptionDefinition('k', QVariant::String, QString());
-        list << OptionDefinition('l', QVariant::Int, QString());
-        list << OptionDefinition('s', QVariant::String, QString());
-        list << OptionDefinition('q', QVariant::String, QString());
-        list << OptionDefinition('r', QVariant::String, QString("answer"));
-        list << OptionDefinition('h', QVariant::String, QString("help"));
+        list << OptionDefinition('p', NeedArgument);
+        list << OptionDefinition('u', NeedArgument);
+        list << OptionDefinition('k', OptionalArgument);
+        list << OptionDefinition('l', NeedArgument);
+        list << OptionDefinition('s', NeedArgument);
+        list << OptionDefinition('q', OptionalArgument);
+        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString("answer"));
         break;
     case GeneratePW:
-        list << OptionDefinition('i', QVariant::Int, QString());
-        list << OptionDefinition('p', QVariant::String, QString());
-        list << OptionDefinition('u', QVariant::String, QString());
-        list << OptionDefinition('l', QVariant::Int, QString());
-        list << OptionDefinition('s', QVariant::String, QString());
-        list << OptionDefinition('h', QVariant::String, QString("help"));
+        list << OptionDefinition('i', NeedArgument, QVariant::Int);
+        list << OptionDefinition('p', NeedArgument);
+        list << OptionDefinition('u', NeedArgument);
+        list << OptionDefinition('l', NeedArgument, QVariant::Int);
+        list << OptionDefinition('s', NeedArgument);
         break;
     case Show:
-        list << OptionDefinition('i', QVariant::Int, QString());
-        list << OptionDefinition('p', QVariant::String, QString());
-        list << OptionDefinition('u', QVariant::String, QString());
-        list << OptionDefinition('k', QVariant::Invalid, QString());
-        list << OptionDefinition('l', QVariant::Invalid, QString());
-        list << OptionDefinition('s', QVariant::Invalid, QString());
-        list << OptionDefinition('q', QVariant::Invalid, QString());
-        list << OptionDefinition('t', QVariant::Invalid, QString());
-        list << OptionDefinition('r', QVariant::Invalid, QString("answer"));
-        list << OptionDefinition('h', QVariant::Invalid, QString("help"));
-        list << OptionDefinition('e', QVariant::Invalid, QString("all"));
-        list << OptionDefinition('a', QVariant::Invalid, QString());
+        list << OptionDefinition('i', OptionalArgument, QVariant::Int);
+        list << OptionDefinition('p', OptionalArgument);
+        list << OptionDefinition('u', OptionalArgument);
+        list << OptionDefinition('k', OptionalArgument);
+        list << OptionDefinition('l', OptionalArgument, QVariant::Int);
+        list << OptionDefinition('s', OptionalArgument);
+        list << OptionDefinition('q', OptionalArgument);
+        list << OptionDefinition('t', OptionalArgument, QVariant::DateTime);
+        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString("answer"));
+        list << OptionDefinition('a', &m_optionAll, QString("all"));
         break;
     case Modify:
-        list << OptionDefinition('i', QVariant::Int, QString());
-        list << OptionDefinition('p', QVariant::String, QString());
-        list << OptionDefinition('u', QVariant::String, QString());
-        list << OptionDefinition('k', QVariant::String, QString());
-        list << OptionDefinition('l', QVariant::Int, QString());
-        list << OptionDefinition('s', QVariant::String, QString());
-        list << OptionDefinition('q', QVariant::String, QString());
-        list << OptionDefinition('r', QVariant::String, QString("answer"));
-        list << OptionDefinition('h', QVariant::Invalid, QString("help"));
+        list << OptionDefinition('i', NeedArgument, QVariant::Int);
+        list << OptionDefinition('p', NeedArgument);
+        list << OptionDefinition('u', NeedArgument);
+        list << OptionDefinition('k', NeedArgument);
+        list << OptionDefinition('l', NeedArgument, QVariant::Int);
+        list << OptionDefinition('s', NeedArgument);
+        list << OptionDefinition('q', NeedArgument);
+        list << OptionDefinition('r', NeedArgument, QVariant::String, QString("answer"));
         break;
     case Remove:
-        list << OptionDefinition('i', QVariant::Int, QString());
-        list << OptionDefinition('p', QVariant::String, QString());
-        list << OptionDefinition('u', QVariant::String, QString());
-        list << OptionDefinition('h', QVariant::Invalid, QString("help"));
+        list << OptionDefinition('i', NeedArgument);
+        list << OptionDefinition('p', NeedArgument);
+        list << OptionDefinition('u', NeedArgument);
         break;
     case File:
-        list << OptionDefinition('f', QVariant::String, QString("file"));
-        list << OptionDefinition('o', QVariant::Invalid, QString("out"));
-        list << OptionDefinition('g', QVariant::Invalid, QString("in"));
+        list << OptionDefinition('f', NeedArgument, QVariant::String, QString("file"));
+        list << OptionDefinition('o', NoArgument, QVariant::Invalid, QString("out"));
+        list << OptionDefinition('g', NoArgument, QVariant::Invalid, QString("in"));
         break;
     default:
         break;

@@ -6,14 +6,16 @@ const QString ConsoleInterface::m_colorRed = "\e[0,31m";
 const QString ConsoleInterface::m_colorGreen = "\e[0,32m";
 const QString ConsoleInterface::m_colorLBlue = "\e[0,34m";
 const QString ConsoleInterface::m_colorStandard = "\e[0,0m";
-const char ConsoleInterface::printOrder[] = {'i', 'p', 'u', 'k', 'l', 's', 'q', 'r', 't', 0};
+const QString ConsoleInterface::m_colorBraun = "\e[0,33m";
 
 
 // Constructor
 ConsoleInterface::ConsoleInterface() :
     outStream(stdout)
 {
-    m_printOrderList = getPrintOrderForColumns();
+    m_printOrderList << QString("id") << QString("provider") << QString("username") << QString("password")
+                     << QString("question") << QString("answer") << QString("passwordlength")
+                     << QString("definedcharacter") << QString("lastmodify");
 }
 
 /**
@@ -28,13 +30,23 @@ void ConsoleInterface::printError(const QString &errorMsg)
 }
 
 /**
+ * Print warnings.
+ * @param warnings
+ */
+void ConsoleInterface::printWarnings(const QString &warnings)
+{
+    QString coloredMsg = m_colorBraun + warnings + m_colorStandard;
+    outStream << coloredMsg << '\n';
+}
+
+/**
  * Print a single Account object to console.
  * Calculates the width for each column to print
  * and the tables total width.
  * Draws a header and the Account object.
  * @param account
  */
-void ConsoleInterface::printSingleAccount(const Account &account)
+void ConsoleInterface::printSingleAccount(const QVariantMap &account)
 {
     if (account.isEmpty()) {
         return;
@@ -80,33 +92,17 @@ void ConsoleInterface::printSuccessMsg(const QString &message)
  * @param accountList
  * @param columnWidth
  */
-void ConsoleInterface::printAccountList(const QList<Account> &accountList)
+void ConsoleInterface::printAccountList(const QList<QVariantMap> &accountList)
 {
     if (accountList.isEmpty()) {
-        outStream << 'n';
+        outStream << m_colorGreen << "Nothing was found.\n" << m_colorStandard;
         return;
     }
     ColumnWidth tableLayout = getTableLayout(accountList);
     printTableHeader(accountList[0], tableLayout);
-    foreach (const Account account, accountList) {
+    foreach (const QVariantMap account, accountList) {
         printAccount(account, tableLayout);
     }
-}
-
-/**
- * Print parsed options.
- * @param optionTable
- */
-void ConsoleInterface::printOptionTable(const QHash<char, QVariant> optionTable)
-{
-    Account account;
-    QList<char> keyList = optionTable.keys();
-    foreach (const char key, keyList) {
-        QString keyName = Persistence::columnNameOfOption(key);
-        QVariant value = optionTable.value(key);
-        account.insert(keyName, value);
-    }
-    printSingleAccount(account);
 }
 
 /**
@@ -114,7 +110,7 @@ void ConsoleInterface::printOptionTable(const QHash<char, QVariant> optionTable)
  * @param accountList
  * @param filepath
  */
-void ConsoleInterface::writeToFile(const QList<Account> &accountList, const QString &filepath)
+void ConsoleInterface::writeToFile(const QList<QVariantMap> &accountList, const QString &filepath)
 {
     QFile file(filepath);
     if (! file.open(QFile::ReadWrite)) {
@@ -122,7 +118,7 @@ void ConsoleInterface::writeToFile(const QList<Account> &accountList, const QStr
         return;
     }
     QDataStream fileStream(&file);
-    foreach (Account account, accountList) {
+    foreach (QVariantMap account, accountList) {
         QString record;
         foreach (QString column, m_printOrderList) {
             if (account.contains(column)) {
@@ -138,31 +134,11 @@ void ConsoleInterface::writeToFile(const QList<Account> &accountList, const QStr
 }
 
 /**
- * Get the print order of columns.
- * The option character are translated to column names.
- * Those column names will be stored in a list and in
- * the order to print.
- * @return
- */
-QStringList ConsoleInterface::getPrintOrderForColumns()
-{
-    QStringList columnList;
-    int index = 0;
-    while (printOrder[index] != 0) {
-        QString columnName = Persistence::columnNameOfOption(printOrder[index]);
-        columnList << columnName;
-        ++index;
-    }
-
-    return columnList;
-}
-
-/**
  * Print an output header.
  * @param account
  * @param columnWidth
  */
-void ConsoleInterface::printTableHeader(const Account &account, const ColumnWidth &columnWidth)
+void ConsoleInterface::printTableHeader(const QVariantMap &account, const ColumnWidth &columnWidth)
 {
     QChar line('-');
     QChar space(' ');
@@ -185,7 +161,7 @@ void ConsoleInterface::printTableHeader(const Account &account, const ColumnWidt
  * @param account
  * @param columnWidth
  */
-void ConsoleInterface::printAccount(const Account &account, const ColumnWidth &columnWidth)
+void ConsoleInterface::printAccount(const QVariantMap &account, const ColumnWidth &columnWidth)
 {
     QChar line('-');
     QChar space(' ');
@@ -210,10 +186,10 @@ void ConsoleInterface::printAccount(const Account &account, const ColumnWidth &c
  * @param accountList
  * @return
  */
-ColumnWidth ConsoleInterface::getTableLayout(const QList<Account> &accountList)
+ColumnWidth ConsoleInterface::getTableLayout(const QList<QVariantMap> &accountList)
 {
     ColumnWidth tableLayout;
-    foreach (const Account account, accountList) {
+    foreach (const QVariantMap account, accountList) {
         foreach (const QString column, account.keys()) {
             tableLayout.insertWidthValue(column, account.value(column));
         }

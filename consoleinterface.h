@@ -8,11 +8,8 @@
  */
 
 #include "columnwidth.h"
-#include "persistence.h"
 #include <QTextStream>
 #include <QFile>
-
-typedef QHash<QString, QVariant> Account;
 
 class ConsoleInterface
 {
@@ -20,12 +17,12 @@ public:
     ConsoleInterface();
 
     void printError(const QString &errorMsg);
-    void printSingleAccount(const Account &account);
+    void printWarnings(const QString& warnings);
+    void printSingleAccount(const QVariantMap &account);
     void printHelp(const QStringList &help);
     void printSuccessMsg(const QString &message);
-    void printAccountList(const QList<Account> &accountList);
-    void printOptionTable(const QHash<char, QVariant> optionTable);
-    void writeToFile(const QList<Account> &accountList, const QString &filepath);
+    void printAccountList(const QList<QVariantMap> &accountList);
+    void writeToFile(const QList<QVariantMap> &accountList, const QString &filepath);
 
 private:
     QTextStream outStream;
@@ -35,13 +32,13 @@ private:
     static const QString m_colorGreen;
     static const QString m_colorLBlue;
     static const QString m_colorStandard;
-    static const char printOrder[];
+    static const QString m_colorBraun;
+    const QStringList printOrder;
 
     // Methods
-    QStringList getPrintOrderForColumns();
-    void printTableHeader(const Account &account, const ColumnWidth &columnWidth);
-    void printAccount(const Account &account, const ColumnWidth &columnWidth);
-    ColumnWidth getTableLayout(const QList<Account> &accountList);
+    void printTableHeader(const QVariantMap &account, const ColumnWidth &columnWidth);
+    void printAccount(const QVariantMap &account, const ColumnWidth &columnWidth);
+    ColumnWidth getTableLayout(const QList<QVariantMap> &accountList);
 };
 
 #endif // CONSOLEINTERFACE_H

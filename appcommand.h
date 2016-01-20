@@ -32,9 +32,11 @@ public:
 
 private:
     Command m_command;
+    bool m_optionAll;
 
 public:
     Command command() const                 { return m_command; }
+    bool isOptionAllSet() const            { return m_optionAll; }
     QList<OptionDefinition> commandsOptions();
     QStringList getHelpText();
 
