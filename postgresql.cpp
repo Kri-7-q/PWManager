@@ -82,6 +82,11 @@ int PostgreSQL::deleteAccountObject(const OptionTable &account)
 bool PostgreSQL::modifyAccountObject(const OptionTable &modifications)
 {
     QSqlRecord recordIdentifier = recordWithIdentifier(modifications);
+    if (recordIdentifier.isEmpty()) {
+        m_errorMsg.append(QString("Can not identify Account object in database!\n"));
+        m_errorMsg.append(QString("It needs a 'id' value. Or 'provider' and 'username' to identify an Account object.\n"));
+        return false;
+    }
     QSqlRecord recordValues = recordWithoutIdentifier(modifications);
     QSqlDatabase db = QSqlDatabase::database(QString("local"));
     QString sqlUpdate = db.driver()->sqlStatement(QSqlDriver::UpdateStatement, m_tableName, recordValues, true);
