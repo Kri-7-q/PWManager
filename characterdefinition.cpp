@@ -1,4 +1,5 @@
 #include "characterdefinition.h"
+#include <QTime>
 
 /**
  * Constructor
@@ -41,6 +42,25 @@ CharacterDefinition::CharacterDefinition(unsigned short amount, QList<QChar> cha
     for (QChar character : characterList) {
         m_characterList << character;
     }
+}
+
+/**
+ * Get a random character list of the defined character set.
+ * The returned list has the size of the amount value of this
+ * object.
+ * @return list     A list with randomly picked characters from member list.
+ */
+QList<QChar> CharacterDefinition::getRandomSet() const
+{
+    QList<QChar> listCopy(m_characterList);
+    QList<QChar> list;
+    qsrand(QTime::currentTime().msec());
+    for (int i=0; i<m_amount; ++i) {
+        int index = qrand() % listCopy.size();
+        list << listCopy.takeAt(index);
+    }
+
+    return list;
 }
 
 /**

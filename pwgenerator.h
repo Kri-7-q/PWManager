@@ -2,7 +2,7 @@
 #define PASSWORD_H
 
 #include "characterdefinition.h"
-#include <QTime>
+#include "characterdefinitionlist.h"
 
 class PwGenerator
 {
@@ -23,12 +23,8 @@ public:
     QString passwordFromDefinition(const ushort passwordLength, const QString &definitionString);
 
 private:
-    QList<CharacterDefinition> parseCharacterDefinitionString(const QString &definitionString);
-    QList<CharacterDefinition> fixAmountValues(const ushort passwordLength, const QList<CharacterDefinition> &definitionList);
-    QList<QChar> randomCharacterFromDefinition(const CharacterDefinition &definition);
+    CharacterDefinitionList parseCharacterDefinitionString(const QString &definitionString, CharacterDefinitionList& definitionList);
     void setErrorMessage(const QString &message);
-    int separarteCharacterAmountDefined(QList<CharacterDefinition> &definitionList, QList<CharacterDefinition> &undefinedList);
-    void fillDefinitionToPasswordLength(QList<CharacterDefinition> &list, const ushort addtoEach, ushort rest);
 };
 
 #endif // PASSWORD_H
