@@ -1,7 +1,7 @@
 #ifndef CHARACTERDEFINITIONLIST_H
 #define CHARACTERDEFINITIONLIST_H
 
-#include <characterdefinition.h>
+#include "PasswordGenerator/characterdefinition.h"
 
 class CharacterDefinitionList
 {

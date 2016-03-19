@@ -1,8 +1,8 @@
-#include "optionparser.h"
-#include "consoleinterface.h"
-#include "pwgenerator.h"
-#include "postgresql.h"
-#include "appcommand.h"
+#include "ConsoleOptions/optionparser.h"
+#include "UserInterface/consoleinterface.h"
+#include "PasswordGenerator/pwgenerator.h"
+#include "Persistence/postgresql.h"
+#include "ConsoleOptions/appcommand.h"
 #include <QDebug>
 #include <QDateTime>
 
