@@ -57,9 +57,9 @@ int main(int argc, char *argv[])
     }
 
     // Open database
-    PostgreSQL database;
-    if (! database.open()) {
-        userInterface.printError(database.error());
+    Persistence* database = new PostgreSQL();
+    if (! database->open()) {
+        userInterface.printError(database->error());
         return -1;
     }
 
@@ -78,14 +78,14 @@ int main(int argc, char *argv[])
             optionTable.insert('k', QVariant(password));
         }
         optionTable.insert('t', QVariant(QDateTime::currentDateTime()));
-        bool result = database.persistAccountObject(optionTable);
+        bool result = database->persistAccountObject(optionTable);
         if (result) {
             userInterface.printSuccessMsg("Account successfully persisted.\n");
-            QVariantMap account = database.findAccount(optionTable);
+            QVariantMap account = database->findAccount(optionTable);
             userInterface.printSingleAccount(account);
         } else {
             userInterface.printError("Could not store new Account !");
-            userInterface.printError(database.error());
+            userInterface.printError(database->error());
         }
         break;
     }
@@ -93,18 +93,18 @@ int main(int argc, char *argv[])
         if (appCommand.isOptionAllSet()) {
             setAllOptions(optionTable);
         }
-        QList<QVariantMap> list = database.findAccountsLike(optionTable);
-        if (database.hasError()) {
-            userInterface.printError(database.error());
+        QList<QVariantMap> list = database->findAccountsLike(optionTable);
+        if (database->hasError()) {
+            userInterface.printError(database->error());
             break;
         }
         userInterface.printAccountList(list);
         break;
     }
     case AppCommand::Remove: {
-        int rowsRemoved = database.deleteAccountObject(optionTable);
-        if (database.hasError()) {
-            userInterface.printError(database.error());
+        int rowsRemoved = database->deleteAccountObject(optionTable);
+        if (database->hasError()) {
+            userInterface.printError(database->error());
         } else {
             QString msg = QString("%1 accounts removed from database.\n").arg(rowsRemoved);
             userInterface.printSuccessMsg(msg);
@@ -113,13 +113,13 @@ int main(int argc, char *argv[])
     }
     case AppCommand::Modify: {
         optionTable.insert('t', QDateTime::currentDateTime());
-        if (database.modifyAccountObject(optionTable)) {
+        if (database->modifyAccountObject(optionTable)) {
             userInterface.printSuccessMsg("Account object successfully updated.\n");
-            QVariantMap account = database.findAccount(optionTable);
+            QVariantMap account = database->findAccount(optionTable);
             userInterface.printSingleAccount(account);
         } else {
             userInterface.printError("Account could not be updated !\n");
-            userInterface.printError(database.error());
+            userInterface.printError(database->error());
         }
         break;
     }
@@ -129,16 +129,16 @@ int main(int argc, char *argv[])
             OptionTable searchObj(optionTable);
             searchObj.insert('l', QVariant());
             searchObj.insert('s', QVariant());
-            QVariantMap pwDefinition = database.findAccount(searchObj);
+            QVariantMap pwDefinition = database->findAccount(searchObj);
             if (pwDefinition.isEmpty()) {
                 userInterface.printError("Could not read password definition.\n");
                 return -1;
             }
             if (! optionTable.contains('l')) {
-                optionTable.insert('l', pwDefinition.value(database.optionToRealName('l')));
+                optionTable.insert('l', pwDefinition.value(database->optionToRealName('l')));
             }
             if (! optionTable.contains('s')) {
-                optionTable.insert('s', pwDefinition.value(database.optionToRealName('s')));
+                optionTable.insert('s', pwDefinition.value(database->optionToRealName('s')));
             }
         }
         int length = optionTable.value('l').toInt();
@@ -151,17 +151,17 @@ int main(int argc, char *argv[])
         }
         optionTable.insert('k', password);
         optionTable.insert('t', QDateTime::currentDateTime());
-        if (database.modifyAccountObject(optionTable)) {
+        if (database->modifyAccountObject(optionTable)) {
             userInterface.printSuccessMsg("New password generated and stored into database.\n");
         } else {
             userInterface.printError("Could not store new password into database !\n");
-            userInterface.printError(database.error());
+            userInterface.printError(database->error());
         }
         break;
     }
     case AppCommand::File:
         if (optionTable.contains('o')) {
-            QList<QVariantMap> accountList = database.allPersistedAccounts();
+            QList<QVariantMap> accountList = database->allPersistedAccounts();
             userInterface.writeToFile(accountList, optionTable.value('f').toString());
         }
         break;
@@ -170,7 +170,8 @@ int main(int argc, char *argv[])
     }
 
     // Close open persistence.
-    database.close();
+    database->close();
+    delete database;
 
     return 1;
 }
