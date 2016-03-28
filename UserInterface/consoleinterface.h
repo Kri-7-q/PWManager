@@ -33,7 +33,6 @@ private:
     static const QString m_colorLBlue;
     static const QString m_colorStandard;
     static const QString m_colorBraun;
-    const QStringList printOrder;
 
     // Methods
     void printTableHeader(const QVariantMap &account, const ColumnWidth &columnWidth);

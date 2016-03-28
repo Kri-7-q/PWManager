@@ -141,6 +141,11 @@ QVariantMap PostgreSQL::findAccount(const OptionTable &searchObj)
     return accountObject(query.record());
 }
 
+/**
+ * Find Account objects which fits to the search values of search object.
+ * @param searchObj
+ * @return
+ */
 QList<QVariantMap> PostgreSQL::findAccountsLike(const OptionTable &searchObj)
 {
     QSqlRecord record = recordFromOptionTable(searchObj);

@@ -1,7 +1,7 @@
 #include "ConsoleOptions/optionparser.h"
 #include "UserInterface/consoleinterface.h"
 #include "PasswordGenerator/pwgenerator.h"
-#include "Persistence/postgresql.h"
+#include "Persistence/xmlpersistence.h"
 #include "ConsoleOptions/appcommand.h"
 #include <QDebug>
 #include <QDateTime>
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     }
 
     // Open database
-    Persistence* database = new PostgreSQL();
+    Persistence* database = new XmlPersistence();
     if (! database->open()) {
         userInterface.printError(database->error());
         return -1;

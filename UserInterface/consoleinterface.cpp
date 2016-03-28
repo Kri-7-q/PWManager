@@ -14,8 +14,8 @@ ConsoleInterface::ConsoleInterface() :
     outStream(stdout)
 {
     m_printOrderList << QString("id") << QString("provider") << QString("username") << QString("password")
-                     << QString("question") << QString("answer") << QString("passwordlength")
-                     << QString("definedcharacter") << QString("lastmodify");
+                     << QString("question") << QString("answer") << QString("passwordLength")
+                     << QString("definedCharacter") << QString("lastModify");
 }
 
 /**
