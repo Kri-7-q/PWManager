@@ -25,7 +25,7 @@ bool XmlPersistence::open()
     QFile xmlFile(filePath);
     if (! xmlFile.open(QFile::ReadOnly)) {
         m_error = QString("Could not open file !");
-        return true;
+        return false;
     }
     bool result = parseXmlContentFile(xmlFile);
     xmlFile.close();
@@ -56,7 +56,7 @@ void XmlPersistence::close()
     QString filePath = getUsersHomePath() + "/" + m_filename;
     QFile file(filePath);
     if (! file.open(QFile::WriteOnly)) {
-        m_error = QString("Can not open file to write content !");
+        m_error = QString("Can not open file to write content !\nModifications not stored !");
         return;
     }
     QTextStream fileStream(&file);
@@ -138,7 +138,7 @@ QVariantMap XmlPersistence::findAccount(const OptionTable &searchObj)
 {
     for (int index=0; index<m_contentList.size(); ++index) {
         if (equals(searchObj, m_contentList[index])) {
-            return m_contentList[index];
+            return accountFromIndexPartially(index, searchObj.keys());
         }
     }
 
@@ -149,9 +149,10 @@ QVariantMap XmlPersistence::findAccount(const OptionTable &searchObj)
 QList<QVariantMap> XmlPersistence::findAccountsLike(const OptionTable &searchObj)
 {
     QList<QVariantMap> list;
+    QList<char> optionList = searchObj.keys();
     for (int index=0; index<m_contentList.size(); ++index) {
         if (equals(searchObj, m_contentList[index])) {
-            list << m_contentList[index];
+            list << accountFromIndexPartially(index, optionList);
         }
     }
 
@@ -245,6 +246,26 @@ QString XmlPersistence::getUsersHomePath() const
 }
 
 /**
+ * Get an Account object from the list with a list of options.
+ * The options singnals which attributes are requested.
+ * @param index
+ * @param optionList
+ * @return
+ */
+QVariantMap XmlPersistence::accountFromIndexPartially(const int index, const QList<char> &optionList)
+{
+    QVariantMap& persistentAccount = m_contentList[index];
+    QVariantMap account;
+    for (int i=0; i<optionList.size(); ++i) {
+        QString key = optionToRealName(optionList[i]);
+        QVariant value = persistentAccount.value(key);
+        account.insert(key, value);
+    }
+
+    return account;
+}
+
+/**
  * Parses the XML file and reads the content into memory.
  * @param file      A file to read from.
  * @return          True if file was read.
@@ -322,15 +343,19 @@ bool XmlPersistence::parseXmlAccountObject(const QDomElement &xmlElement, QVaria
 QVariant XmlPersistence::castStringToVariant(const QString dataType, const QString value) const
 {
     QVariant::Type type = QVariant::nameToType(dataType.toLocal8Bit().data());
-    QVariant var(value);
+    QVariant var(type);
     switch (type) {
     case QVariant::Int:
-        var = QVariant(value.toInt());
+        var.setValue(value.toInt());
         break;
     case QVariant::DateTime:
-        var = QVariant(QDateTime::fromString(value, Qt::ISODate));
+        var.setValue(QDateTime::fromString(value, Qt::ISODate));
+        break;
+    case QVariant::String:
+        var.setValue(value);
         break;
     default:
+        var = QVariant();
         break;
     }
 
@@ -423,6 +448,9 @@ bool XmlPersistence::equals(const OptionTable &optionTblObj, const QVariantMap &
     QList<char> keyList = optionTblObj.keys();
     for (int index=0; index<keyList.size(); ++index) {
         QVariant searchValue = optionTblObj.value(keyList[index]);
+        if (searchValue.isNull()) {
+            continue;
+        }
         QVariant accountValue = accountObj.value(optionToRealName(keyList[index]));
         if (searchValue != accountValue) {
             return false;

@@ -148,12 +148,14 @@ QVariantMap PostgreSQL::findAccount(const OptionTable &searchObj)
  */
 QList<QVariantMap> PostgreSQL::findAccountsLike(const OptionTable &searchObj)
 {
-    QSqlRecord record = recordFromOptionTable(searchObj);
-    QSqlRecord recordSearch = recordFieldsWithValues(searchObj);
     QSqlDatabase db = QSqlDatabase::database(QString("local"));
+    QSqlRecord record = recordFromOptionTable(searchObj);
     QString sqlSelect = db.driver()->sqlStatement(QSqlDriver::SelectStatement, m_tableName, record, false);
-    QString sqlWhereClause = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, recordSearch, true);
-    sqlSelect.append(' ').append(sqlWhereClause);
+    QSqlRecord recordSearch = recordFieldsWithValues(searchObj);
+    if (! recordSearch.isEmpty()) {
+        QString sqlWhereClause = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, recordSearch, true);
+        sqlSelect.append(' ').append(sqlWhereClause);
+    }
     QSqlQuery query(db);
     if (! query.prepare(sqlSelect)) {
         setErrorPrepareStatement(query.lastError().databaseText(), query.lastError().driverText());

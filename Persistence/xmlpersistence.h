@@ -46,6 +46,7 @@ private:
     // Private methods
     QString getUsersHomePath() const;
     int getNextId()                     { return m_nextId++; }
+    QVariantMap accountFromIndexPartially(const int index, const QList<char> &optionList);
     // Parsing
     bool parseXmlContentFile(QFile& file);
     bool parseXmlAccountObject(const QDomElement& xmlElement, QVariantMap& account);
