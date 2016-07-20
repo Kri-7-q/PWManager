@@ -12,6 +12,8 @@
  * - modify
  * - generatepw
  * - remove
+ * - file
+ * - find
  * - help
  *
  * Each of these commands takes a specified set of options. the
@@ -28,7 +30,7 @@ public:
     AppCommand(const QString &parameter);
     ~AppCommand();
 
-    enum Command { None, New, GeneratePW, Show, Remove, Modify, Help, File };
+    enum Command { None, New, GeneratePW, Show, Remove, Modify, Help, File, Find };
 
 private:
     Command m_command;
@@ -50,6 +52,7 @@ private:
     QStringList getHelpForShow();
     QStringList getHelpForRemove();
     QStringList getHelpForFile();
+    QStringList getHelpForFind();
 };
 
 #endif // MANAGERCOMMAND_H

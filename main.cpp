@@ -1,8 +1,9 @@
 #include "ConsoleOptions/optionparser.h"
 #include "UserInterface/consoleinterface.h"
 #include "PasswordGenerator/pwgenerator.h"
-#include "Persistence/xmlpersistence.h"
 #include "ConsoleOptions/appcommand.h"
+#include "Persistence/persistencefactory.h"
+#include "Utilities/searchengine.h"
 #include <QDebug>
 #include <QDateTime>
 
@@ -10,8 +11,9 @@
 
 // Global method
 void setAllOptions(OptionTable& optionTable);
-
-
+QVariantMap variantMapFromOptionTable(const OptionTable& table, const Persistence* db,
+                                      const bool onlyValues = false, const QList<char> &removeList = QList<char>());
+OptionTable removeAllValuesExceptOf(const QList<char>& exceptionKeyList, const OptionTable& table);
 
 
 int main(int argc, char *argv[])
@@ -57,11 +59,18 @@ int main(int argc, char *argv[])
     }
 
     // Open database
-    Persistence* database = new XmlPersistence();
+    Persistence* database = PersistenceFactory::createPersistence(PersistenceFactory::SqlPostgre);
     if (! database->open()) {
         userInterface.printError(database->error());
         return -1;
     }
+    // Get print order for console interface.
+    QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k' << 'l' << 's' << 'q' << 'r' << 't';
+    QStringList printOrder;
+    for (int index=0; index<optionList.size(); ++index) {
+        printOrder << database->optionToRealName(optionList[index]);
+    }
+    userInterface.setPrintOrderList(printOrder);
 
     // Execute command
     switch (command) {
@@ -165,6 +174,27 @@ int main(int argc, char *argv[])
             userInterface.writeToFile(accountList, optionTable.value('f').toString());
         }
         break;
+    case AppCommand::Find: {
+        QList<char> exceptionKeyList = QList<char>() << 'l' << 's' << 't';
+        OptionTable searchInPersistence = removeAllValuesExceptOf(exceptionKeyList, optionTable);
+        QList<QVariantMap> accountList = database->findAccountsLike(searchInPersistence);
+        if (database->hasError()) {
+            userInterface.printError("Could not read Account objects from database !");
+            userInterface.printError(database->error());
+            break;
+        }
+        QVariantMap searchObj = variantMapFromOptionTable(optionTable, database, true, exceptionKeyList);
+        QList<QVariantMap> searchResult;
+        for (int index=0; index<accountList.size(); ++index) {
+            QVariantMap accountObj = accountList[index];
+            SearchEngine searchEngine(accountObj, searchObj);
+            // If (object like account) {
+            //  searchResult << account;
+            // }
+        }
+        userInterface.printAccountList(searchResult);
+        break;
+    }
     default:
         break;
     }
@@ -191,4 +221,62 @@ void setAllOptions(OptionTable &optionTable)
         QVariant value = optionTable.value(optionList[index], QVariant());
         optionTable.insert(optionList[index], value);
     }
+}
+
+/**
+ * Convert an OptionTable object to a QVariantMap.
+ * This action needs to get Persistence names of option characters.
+ * Values of OptionTable are Stored whit the real name from
+ * Persistence in a QVariantMap.
+ * @param table             OptionsTable from option parser.
+ * @param db                Pointer to the persistence.
+ * @param onlyValues        Do not copy attributes without a value if it is set to true.
+ * @return accountObj       A QVariantMap with the content of OptionTable.
+ */
+QVariantMap variantMapFromOptionTable(const OptionTable& table, const Persistence *db, const bool onlyValues,
+                                      const QList<char> &removeList)
+{
+    QVariantMap accountObj;
+    QList<char> keyList = table.keys();
+    for (int index=0; index<keyList.size(); ++index) {
+        char key = keyList[index];
+        QVariant value = table.value(key);
+        QString stringKey = db->optionToRealName(key);
+        if (onlyValues) {
+            if (value.isValid()) {
+                accountObj.insert(stringKey, value);
+            }
+        } else {
+            accountObj.insert(stringKey, value);
+        }
+    }
+    for (int index=0; index<removeList.size(); ++index) {
+        QString stringKey = db->optionToRealName(removeList[index]);
+        accountObj.remove(stringKey);
+    }
+
+    return accountObj;
+}
+
+/**
+ * Copy an OptionTable object and removes all values except a the given key list.
+ * Each value of the given exception list will be copied into the result object.
+ * @param exceptionKeyList          A list of keys which are an exception.
+ * @param table                     An OptionTable from option parser.
+ * @return result                   An OptionTable without values except of exceptionKeyList.
+ */
+OptionTable removeAllValuesExceptOf(const QList<char>& exceptionKeyList, const OptionTable &table)
+{
+    OptionTable result;
+    QList<char> keyList = table.keys();
+    for (int index=0; index<keyList.size(); ++index) {
+        result.insert(keyList[index], QVariant(QVariant::Invalid));
+    }
+    for (int index=0; index<exceptionKeyList.size(); ++index) {
+        char key = exceptionKeyList[index];
+        QVariant value = table.value(key);
+        result.insert(key, value);
+    }
+
+    return result;
 }

@@ -16,6 +16,8 @@ class ConsoleInterface
 public:
     ConsoleInterface();
 
+    void setPrintOrderList(const QStringList& list);
+
     void printError(const QString &errorMsg);
     void printWarnings(const QString& warnings);
     void printSingleAccount(const QVariantMap &account);

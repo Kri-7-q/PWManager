@@ -76,6 +76,18 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('o', NoArgument, QVariant::Invalid, QString("out"));
         list << OptionDefinition('g', NoArgument, QVariant::Invalid, QString("in"));
         break;
+    case Find:
+        list << OptionDefinition('i', NoArgument, QVariant::Invalid);
+        list << OptionDefinition('p', OptionalArgument);
+        list << OptionDefinition('u', OptionalArgument);
+        list << OptionDefinition('k', OptionalArgument);
+        list << OptionDefinition('l', NoArgument, QVariant::Int);
+        list << OptionDefinition('s', OptionalArgument);
+        list << OptionDefinition('q', OptionalArgument);
+        list << OptionDefinition('t', OptionalArgument, QVariant::DateTime);
+        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString("answer"));
+        list << OptionDefinition('a', &m_optionAll, QString("all"));
+        break;
     default:
         break;
     }
@@ -132,6 +144,9 @@ AppCommand::Command AppCommand::parseCommand(const QString &parameter)
     }
     if (commandString == "file") {
         return File;
+    }
+    if (commandString == "find") {
+        return Find;
     }
 
     return Help;
@@ -291,6 +306,32 @@ QStringList AppCommand::getHelpForFile()
     help << "  --out\n";
     help << "  -g               Read (get) data from a file and store it to database.\n";
     help << "  --in\n";
+
+    return help;
+}
+
+/**
+ * Help text for command find.
+ * @return
+ */
+QStringList AppCommand::getHelpForFind()
+{
+    QStringList help;
+    help << "pwmanager find <options>\n";
+    help << "Searches in all entries for the given parameter. Options with no value will cause an output\n";
+    help << "of that parameter in search result.";
+    help << "If to any option a value is given then this value will be used to find a database entry.\n\n";
+    help << "  -i               Id of database entry or give an id to identify a database entry.\n";
+    help << "  -p [name]        The provider name of an account.\n";
+    help << "  -u [name]        The username of an account.\n";
+    help << "  -k [password]    Password of an account.\n";
+    help << "  -q [question]    Security question of an account.\n";
+    help << "  -r [answer]      The answer (replay) to the security question.\n";
+    help << "  --answer <answer> | --answer=\"answer\" | --answer=<answer>\n";
+    help << "  -l               The length of password when generate.\n";
+    help << "  -s [definition]  Defined character which are used to generate a password.\n";
+    help << "  -t               The time when account was modified last time.\n";
+    help << "  -a               All values of an account.\n";
 
     return help;
 }

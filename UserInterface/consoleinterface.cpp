@@ -13,9 +13,13 @@ const QString ConsoleInterface::m_colorBraun = "\e[0,33m";
 ConsoleInterface::ConsoleInterface() :
     outStream(stdout)
 {
-    m_printOrderList << QString("id") << QString("provider") << QString("username") << QString("password")
-                     << QString("question") << QString("answer") << QString("passwordLength")
-                     << QString("definedCharacter") << QString("lastModify");
+    m_printOrderList << QString("id") << QString("provider") << QString("username");
+}
+
+// Setter
+void ConsoleInterface::setPrintOrderList(const QStringList &list)
+{
+    m_printOrderList = list;
 }
 
 /**
