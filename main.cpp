@@ -3,7 +3,7 @@
 #include "PasswordGenerator/pwgenerator.h"
 #include "ConsoleOptions/appcommand.h"
 #include "Persistence/persistencefactory.h"
-#include "Utilities/searchengine.h"
+#include "Persistence/filepersistence.h"
 #include <QDebug>
 #include <QDateTime>
 
@@ -169,32 +169,24 @@ int main(int argc, char *argv[])
         break;
     }
     case AppCommand::File:
+        // Store data to file.
         if (optionTable.contains('o')) {
-            QList<QVariantMap> accountList = database->allPersistedAccounts();
-            userInterface.writeToFile(accountList, optionTable.value('f').toString());
+            if (optionTable.contains('v')) {
+                // Human readable file.
+                QList<QVariantMap> accountList = database->allPersistedAccounts();
+                FilePersistence filePersist;
+                filePersist.persistReadableFile(optionTable.value('f').toString(), accountList);
+            } else {
+                // Store data NOT human readable.
+            }
+        }
+        // Read data from file.
+        if (optionTable.contains('g')) {
+            // ...
         }
         break;
-    case AppCommand::Find: {
-        QList<char> exceptionKeyList = QList<char>() << 'l' << 's' << 't';
-        OptionTable searchInPersistence = removeAllValuesExceptOf(exceptionKeyList, optionTable);
-        QList<QVariantMap> accountList = database->findAccountsLike(searchInPersistence);
-        if (database->hasError()) {
-            userInterface.printError("Could not read Account objects from database !");
-            userInterface.printError(database->error());
-            break;
-        }
-        QVariantMap searchObj = variantMapFromOptionTable(optionTable, database, true, exceptionKeyList);
-        QList<QVariantMap> searchResult;
-        for (int index=0; index<accountList.size(); ++index) {
-            QVariantMap accountObj = accountList[index];
-            SearchEngine searchEngine(accountObj, searchObj);
-            // If (object like account) {
-            //  searchResult << account;
-            // }
-        }
-        userInterface.printAccountList(searchResult);
+    case AppCommand::Find:
         break;
-    }
     default:
         break;
     }

@@ -75,6 +75,7 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('f', NeedArgument, QVariant::String, QString("file"));
         list << OptionDefinition('o', NoArgument, QVariant::Invalid, QString("out"));
         list << OptionDefinition('g', NoArgument, QVariant::Invalid, QString("in"));
+        list << OptionDefinition('v', NoArgument, QVariant::Invalid, QString("readable"));
         break;
     case Find:
         list << OptionDefinition('i', NoArgument, QVariant::Invalid);
@@ -114,6 +115,8 @@ QStringList AppCommand::getHelpText()
         return getHelpForRemove();
     case File:
         return getHelpForFile();
+    case Find:
+        return getHelpForFind();
     default:
         return getHelpInGeneral();
     }
@@ -306,6 +309,8 @@ QStringList AppCommand::getHelpForFile()
     help << "  --out\n";
     help << "  -g               Read (get) data from a file and store it to database.\n";
     help << "  --in\n";
+    help << "  -v               Visual human readable file out put with all account information.\n";
+    help << "  --readable       (only for file out put.)\n";
 
     return help;
 }
