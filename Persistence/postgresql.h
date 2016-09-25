@@ -11,7 +11,7 @@ public:
 
     // Persistence interface
 public:
-    bool open();
+    bool open(const QString& parameter = QString());
     void close();
     // Call following function with open database connection.
     bool persistAccountObject(const OptionTable &account);

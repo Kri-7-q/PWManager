@@ -12,8 +12,9 @@ PostgreSQL::PostgreSQL()
 }
 
 // Override
-bool PostgreSQL::open()
+bool PostgreSQL::open(const QString &parameter)
 {
+    Q_UNUSED(parameter)
     QSqlDatabase db = QSqlDatabase::database("local", false);
     if (db.open()) {
         setOpen(true);

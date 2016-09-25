@@ -23,7 +23,7 @@ public:
     virtual ~Persistence();
 
     // Open and close persistence
-    virtual bool open() = 0;
+    virtual bool open(const QString& parameter = QString()) = 0;
     virtual void close() = 0;
     virtual bool isOpen() const;
 

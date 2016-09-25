@@ -19,9 +19,14 @@ XmlPersistence::XmlPersistence() :
  * stored with close() function.
  * @return      True if file content could be read.
  */
-bool XmlPersistence::open()
+bool XmlPersistence::open(const QString &parameter)
 {
-    QString filePath = getUsersHomePath() + "/" + m_filename;
+    QString filePath;
+    if (! parameter.isEmpty()) {
+        filePath = parameter;
+    } else {
+        filePath = getUsersHomePath() + "/" + m_filename;
+    }
     QFile xmlFile(filePath);
     if (! xmlFile.open(QFile::ReadOnly)) {
         m_error = QString("Could not open file !");

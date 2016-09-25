@@ -23,7 +23,7 @@ public:
 
     // Persistence interface
 public:
-    bool open() override;
+    bool open(const QString& parameter = QString()) override;
     void close() override;
     bool persistAccountObject(const OptionTable &account) override;
     int deleteAccountObject(const OptionTable &account) override;
