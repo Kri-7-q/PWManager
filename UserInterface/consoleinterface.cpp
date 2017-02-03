@@ -1,5 +1,4 @@
 #include "consoleinterface.h"
-#include <QDataStream>
 
 
 const QString ConsoleInterface::m_colorRed = "\e[0,31m";
@@ -107,34 +106,6 @@ void ConsoleInterface::printAccountList(const QList<QVariantMap> &accountList)
     foreach (const QVariantMap account, accountList) {
         printAccount(account, tableLayout);
     }
-}
-
-/**
- * @brief ConsoleInterface::writeToFile
- * @param accountList
- * @param filepath
- */
-void ConsoleInterface::writeToFile(const QList<QVariantMap> &accountList, const QString &filepath)
-{
-    QFile file(filepath);
-    if (! file.open(QFile::ReadWrite)) {
-        outStream << m_colorRed << "Could not open file !" << m_colorStandard << "\n";
-        return;
-    }
-    QDataStream fileStream(&file);
-    foreach (QVariantMap account, accountList) {
-        QString record;
-        foreach (QString column, m_printOrderList) {
-            if (account.contains(column)) {
-                record.append(column).append('=').append(account.value(column).toString()).append("  |  ");
-            }
-        }
-        record .append('\n');
-        fileStream << record;
-    }
-    file.close();
-
-    printSuccessMsg(QString("File written.\n"));
 }
 
 /**

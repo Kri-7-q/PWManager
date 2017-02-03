@@ -9,7 +9,6 @@
 
 #include "columnwidth.h"
 #include <QTextStream>
-#include <QFile>
 
 class ConsoleInterface
 {
@@ -24,7 +23,6 @@ public:
     void printHelp(const QStringList &help);
     void printSuccessMsg(const QString &message);
     void printAccountList(const QList<QVariantMap> &accountList);
-    void writeToFile(const QList<QVariantMap> &accountList, const QString &filepath);
 
 private:
     QTextStream outStream;
