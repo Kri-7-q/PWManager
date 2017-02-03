@@ -292,7 +292,7 @@ void OptionParser::setOption(Arguments &arguments, const OptionDefinition &defin
         const_cast<OptionDefinition*>(&definition)->setSwitchOn();
         return;
     }
-    QVariant value = convertValueToVariant(valueString, definition.dataType());
+    QVariant value = definition.convertValue(valueString);
     arguments.insert(definition.option(), value);
 }
 
