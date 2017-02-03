@@ -2,14 +2,14 @@
 #define PERSISTENCEFACTORY_H
 
 #include "postgresql.h"
-#include "xmlpersistence.h"
+#include "filepersistence.h"
 
 class PersistenceFactory
 {
 public:
     PersistenceFactory();
 
-    enum Type { SqlPostgre, Xml };
+    enum Type { SqlPostgre, File };
 
 
     static Persistence* createPersistence(const Type type);

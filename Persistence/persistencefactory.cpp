@@ -12,18 +12,17 @@ PersistenceFactory::PersistenceFactory()
  */
 Persistence* PersistenceFactory::createPersistence(const PersistenceFactory::Type type)
 {
-    Persistence* persistence = NULL;
-
+    Persistence* object = NULL;
     switch (type) {
     case SqlPostgre:
-        persistence = new PostgreSQL();
+        object = new PostgreSQL();
         break;
-    case Xml:
-        persistence = new XmlPersistence();
+    case File:
+        object = new FilePersistence();
         break;
     default:
         break;
     }
 
-    return persistence;
+    return object;
 }
