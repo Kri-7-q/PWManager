@@ -27,7 +27,7 @@
 class AppCommand
 {
 public:
-    AppCommand(const QString &parameter);
+    AppCommand(const int argc, const char* const argv[]);
     ~AppCommand();
 
     enum Command { None, New, GeneratePW, Show, Remove, Modify, Help, File, Find };
@@ -35,15 +35,19 @@ public:
 private:
     Command m_command;
     bool m_optionAll;
+    bool m_isHelpNeeded;
+    QString m_appName;
 
 public:
     Command command() const                 { return m_command; }
-    bool isOptionAllSet() const            { return m_optionAll; }
+    bool isOptionAllSet() const             { return m_optionAll; }
+    bool isHelpNeeded() const               { return m_isHelpNeeded; }
     QList<OptionDefinition> commandsOptions();
     QStringList getHelpText();
 
-private:
+protected:
     Command parseCommand(const QString &parameter);
+    QString applicationName(const char* const parameter);
 
     QStringList getHelpInGeneral();
     QStringList getHelpForNew();

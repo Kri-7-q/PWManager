@@ -13,63 +13,47 @@ void setAllOptions(OptionTable& optionTable);
 QVariantMap variantMapFromOptionTable(const OptionTable& table, const Persistence* db,
                                       const bool onlyValues = false, const QList<char> &removeList = QList<char>());
 OptionTable removeAllValuesExceptOf(const QList<char>& exceptionKeyList, const OptionTable& table);
+void setAttributePrintOrder(ConsoleInterface& iface, Persistence* database);
 
 
 int main(int argc, char *argv[])
 {
     ConsoleInterface userInterface;
 
-    // Make sure that a parameter is given.
-    QString commandString("help");
-    if (argc > 1) {
-        commandString = QString(argv[1]);
-    }
-
     // Get command (first parameter after application name)
     // and its options.
-    AppCommand appCommand(commandString);
+    AppCommand appCommand(argc, argv);
     AppCommand::Command command = appCommand.command();
-    if (command == AppCommand::Help) {
-        userInterface.printHelp(appCommand.getHelpText());
-        return -1;
-    }
-
-    // Get available option and add switches for 'help' and 'all'.
-    bool needHelp = false;
-    QList<OptionDefinition> optionDefinitionList = appCommand.commandsOptions();
-    optionDefinitionList << OptionDefinition('h', &needHelp, QString("help"));
 
     // Get options from command line input.
+    QList<OptionDefinition> optionDefinitionList = appCommand.commandsOptions();
     OptionParser parser(optionDefinitionList);
     OptionTable optionTable = parser.parseOptions(argc, argv, 2);
     if (parser.hasError()) {
         userInterface.printError(parser.errorMsg());
         userInterface.printHelp(appCommand.getHelpText());
-        return 1;
+        return 0;
     }
     if (parser.hasWarnings()) {
         userInterface.printWarnings(parser.warnings());
     }
 
     // Need help?
-    if (needHelp) {
+    // Handle help before open database because it is not required for help text.
+    if (command == AppCommand::Help || appCommand.isHelpNeeded()) {
         userInterface.printHelp(appCommand.getHelpText());
-        return 1;
+        return 0;
     }
 
     // Open database
     Persistence* database = PersistenceFactory::createPersistence(PersistenceFactory::SqlPostgre);
     if (! database->open()) {
         userInterface.printError(database->error());
-        return -1;
+        return 0;
     }
+
     // Get print order for console interface.
-    QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k' << 'l' << 's' << 'q' << 'r' << 't';
-    QStringList printOrder;
-    for (int index=0; index<optionList.size(); ++index) {
-        printOrder << database->optionToRealName(optionList[index]);
-    }
-    userInterface.setPrintOrderList(printOrder);
+    setAttributePrintOrder(userInterface, database);
 
     // Execute command
     switch (command) {
@@ -270,4 +254,18 @@ OptionTable removeAllValuesExceptOf(const QList<char>& exceptionKeyList, const O
     }
 
     return result;
+}
+
+/**
+ * User interface needs a ordered list of attributes to print output in that order.
+ * @param iface
+ * @param database
+ */
+void setAttributePrintOrder(ConsoleInterface& iface, Persistence* database) {
+    QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k' << 'l' << 's' << 'q' << 'r' << 't';
+    QStringList printOrder;
+    for (int index=0; index<optionList.size(); ++index) {
+        printOrder << database->optionToRealName(optionList[index]);
+    }
+    iface.setPrintOrderList(printOrder);
 }

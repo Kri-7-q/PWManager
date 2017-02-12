@@ -9,7 +9,7 @@
  * The standard constructor is used to indicate errors.
  *
  * The first constructor can create options for all the following examoles:
- *  AppName -x -file=/users/horst/text.txt -l12 -ntr
+ *  AppName -x --file=/users/horst/text.txt -l12 -ntr
  *  AppName -nHorst -p password
  * The parser will create a QHash table with all found options and its values.
  * Options can be marked to take a value as a MUST or optional. They can be

@@ -5,10 +5,15 @@
  * Constructor
  * @param parameter The first parameter of command line input.
  */
-AppCommand::AppCommand(const QString &parameter) :
+AppCommand::AppCommand(const int argc, const char * const argv[]) :
     m_optionAll(false)
 {
-    m_command = parseCommand(parameter);
+    if (argc < 2) {
+        m_command = Help;
+    } else {
+        m_command = parseCommand(QString(argv[1]));
+    }
+    m_appName = applicationName(argv[0]);
 }
 
 /**
@@ -27,6 +32,7 @@ AppCommand::~AppCommand()
 QList<OptionDefinition> AppCommand::commandsOptions()
 {
     QList<OptionDefinition> list;
+    list << OptionDefinition('h', &m_isHelpNeeded, QString("help"));
     switch (m_command) {
     case New:
         list << OptionDefinition('p', NeedArgument);
@@ -156,14 +162,30 @@ AppCommand::Command AppCommand::parseCommand(const QString &parameter)
 }
 
 /**
+ * Get the application name from command line parameter.
+ * @param parameter     The first command line parameter.
+ * @return              A string with the application name.
+ */
+QString AppCommand::applicationName(const char * const parameter)
+{
+    QString path(parameter);
+    int index = path.lastIndexOf('/');
+    if (index < 0) {
+        return path;
+    }
+
+    return path.right(path.length() - index - 1);
+}
+
+/**
  * General help text.
  * @return
  */
 QStringList AppCommand::getHelpInGeneral()
 {
     QStringList help;
-    help << "pwmanager <command> <options>\n";
-    help << "pwmanager <command> --help\n";
+    help << m_appName << " <command> <options>\n";
+    help << m_appName << " <command> --help\n";
     help << "   Commands :  Help, New, GeneratePW, Show, Modify, Remove\n\n";
     help << "   help        Shows this help text.\n";
     help << "   new         Adds a new account to database.\n";
@@ -184,7 +206,7 @@ QStringList AppCommand::getHelpInGeneral()
 QStringList AppCommand::getHelpForNew()
 {
     QStringList help;
-    help << "pwmanager new <options>\n";
+    help << m_appName << " new <options>\n";
     help << "Insert a new account into database.\n\n";
     help << "  -p <name>        The name of a provider, Webpage, Device ...\n";
     help << "  -u <name>        A username to login.\n";
@@ -208,7 +230,7 @@ QStringList AppCommand::getHelpForNew()
 QStringList AppCommand::getHelpForGeneratePW()
 {
     QStringList help;
-    help << "pwmanager generatepw <options>\n";
+    help << m_appName << " generatepw <options>\n";
     help << "Generates a new passwort for an given account.\n";
     help << "If no length an character set is given application will try\n\n";
     help << "to read them from database.\n";
@@ -232,7 +254,7 @@ QStringList AppCommand::getHelpForGeneratePW()
 QStringList AppCommand::getHelpForModify()
 {
     QStringList help;
-    help << "pwmanager modify <options>\n";
+    help << m_appName << " modify <options>\n";
     help << "Can modify some values of an account.\n\n";
     help << "  -i <id>          The id (primary key) to identify a database entry.\n";
     help << "or\n";
@@ -258,7 +280,7 @@ QStringList AppCommand::getHelpForModify()
 QStringList AppCommand::getHelpForShow()
 {
     QStringList help;
-    help << "pwmanager show <options>\n";
+    help << m_appName << " show <options>\n";
     help << "Shows chosen infomation about one or more accounts.\n";
     help << "If to any option a value is given then this value will be used to find a database entry.\n\n";
     help << "  -i [id]          Show id of database entry or give an id to identify a database entry.\n";
@@ -284,7 +306,7 @@ QStringList AppCommand::getHelpForShow()
 QStringList AppCommand::getHelpForRemove()
 {
     QStringList help;
-    help << "pwmanager remove <options>\n";
+    help << m_appName << " remove <options>\n";
     help << "Removes an account from database.\n\n";
     help << "  -i <id>          The id (primary key) to identify a database entry.\n";
     help << "or\n";
@@ -301,7 +323,7 @@ QStringList AppCommand::getHelpForRemove()
 QStringList AppCommand::getHelpForFile()
 {
     QStringList help;
-    help << "pwmanager file <options>\n";
+    help << m_appName << " file <options>\n";
     help << "Writes data from database into a file. Or reads from file into database.\n\n";
     help << "  -f <path>        A full path to the file.\n";
     help << "  --file <path>  or  --file=<path>\n";
@@ -322,7 +344,7 @@ QStringList AppCommand::getHelpForFile()
 QStringList AppCommand::getHelpForFind()
 {
     QStringList help;
-    help << "pwmanager find <options>\n";
+    help << m_appName << " find <options>\n";
     help << "Searches in all entries for the given parameter. Options with no value will cause an output\n";
     help << "of that parameter in search result.";
     help << "If to any option a value is given then this value will be used to find a database entry.\n\n";
