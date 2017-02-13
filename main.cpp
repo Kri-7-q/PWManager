@@ -1,7 +1,5 @@
 #include "ConsoleOptions/optionparser.h"
-#include "UserInterface/consoleinterface.h"
-#include "PasswordGenerator/pwgenerator.h"
-#include "ConsoleOptions/appcommand.h"
+#include "commandprocessor.h"
 #include "Persistence/persistencefactory.h"
 #include <QDebug>
 #include <QDateTime>
@@ -55,124 +53,15 @@ int main(int argc, char *argv[])
     // Get print order for console interface.
     setAttributePrintOrder(userInterface, database);
 
+    // If option '-a' is set.
+    // This option must be replaced with all available options for the command.
+    if (appCommand.isOptionAllSet()) {
+        setAllOptions(optionTable);
+    }
+
     // Execute command
-    switch (command) {
-    case AppCommand::New: {
-        if (!optionTable.contains('k')) {
-            PwGenerator pwGenerator;
-            int passwordLength = optionTable.value('l').toInt();
-            QString characterDefinition = optionTable.value('s').toString();
-            QString password = pwGenerator.passwordFromDefinition(passwordLength, characterDefinition);
-            if (pwGenerator.hasError()) {
-                userInterface.printError(pwGenerator.errorMessage());
-                return -1;
-            }
-            optionTable.insert('k', QVariant(password));
-        }
-        optionTable.insert('t', QVariant(QDateTime::currentDateTime()));
-        bool result = database->persistAccountObject(optionTable);
-        if (result) {
-            userInterface.printSuccessMsg("Account successfully persisted.\n");
-            QVariantMap account = database->findAccount(optionTable);
-            userInterface.printSingleAccount(account);
-        } else {
-            userInterface.printError("Could not store new Account !");
-            userInterface.printError(database->error());
-        }
-        break;
-    }
-    case AppCommand::Show: {
-        if (appCommand.isOptionAllSet()) {
-            setAllOptions(optionTable);
-        }
-        QList<QVariantMap> list = database->findAccountsLike(optionTable);
-        if (database->hasError()) {
-            userInterface.printError(database->error());
-            break;
-        }
-        userInterface.printAccountList(list);
-        break;
-    }
-    case AppCommand::Remove: {
-        int rowsRemoved = database->deleteAccountObject(optionTable);
-        if (database->hasError()) {
-            userInterface.printError(database->error());
-        } else {
-            QString msg = QString("%1 accounts removed from database.\n").arg(rowsRemoved);
-            userInterface.printSuccessMsg(msg);
-        }
-        break;
-    }
-    case AppCommand::Modify: {
-        optionTable.insert('t', QDateTime::currentDateTime());
-        if (database->modifyAccountObject(optionTable)) {
-            userInterface.printSuccessMsg("Account object successfully updated.\n");
-            QVariantMap account = database->findAccount(optionTable);
-            userInterface.printSingleAccount(account);
-        } else {
-            userInterface.printError("Account could not be updated !\n");
-            userInterface.printError(database->error());
-        }
-        break;
-    }
-    case AppCommand::GeneratePW: {
-        // If not have new password definition then get it from database.
-        if (! optionTable.contains('l') || ! optionTable.contains('s')) {
-            OptionTable searchObj(optionTable);
-            searchObj.insert('l', QVariant());
-            searchObj.insert('s', QVariant());
-            QVariantMap pwDefinition = database->findAccount(searchObj);
-            if (pwDefinition.isEmpty()) {
-                userInterface.printError("Could not read password definition.\n");
-                return -1;
-            }
-            if (! optionTable.contains('l')) {
-                optionTable.insert('l', pwDefinition.value(database->optionToRealName('l')));
-            }
-            if (! optionTable.contains('s')) {
-                optionTable.insert('s', pwDefinition.value(database->optionToRealName('s')));
-            }
-        }
-        int length = optionTable.value('l').toInt();
-        QString definition = optionTable.value('s').toString();
-        PwGenerator generator;
-        QString password = generator.passwordFromDefinition(length, definition);
-        if (generator.hasError()) {
-            userInterface.printError(generator.errorMessage());
-            return -1;
-        }
-        optionTable.insert('k', password);
-        optionTable.insert('t', QDateTime::currentDateTime());
-        if (database->modifyAccountObject(optionTable)) {
-            userInterface.printSuccessMsg("New password generated and stored into database.\n");
-        } else {
-            userInterface.printError("Could not store new password into database !\n");
-            userInterface.printError(database->error());
-        }
-        break;
-    }
-    case AppCommand::File:
-        // Store data to file.
-        if (optionTable.contains('o')) {
-            if (optionTable.contains('v')) {
-                // Human readable file.
-                QList<QVariantMap> accountList = database->allPersistedAccounts();
-                FilePersistence filePersist;
-                filePersist.persistReadableFile(optionTable.value('f').toString(), accountList);
-            } else {
-                // Store data NOT human readable.
-            }
-        }
-        // Read data from file.
-        if (optionTable.contains('g')) {
-            // ...
-        }
-        break;
-    case AppCommand::Find:
-        break;
-    default:
-        break;
-    }
+    CommandProcessor processor(userInterface, database);
+    processor.process(command, optionTable);
 
     // Close open persistence.
     database->close();
@@ -196,64 +85,6 @@ void setAllOptions(OptionTable &optionTable)
         QVariant value = optionTable.value(optionList[index], QVariant());
         optionTable.insert(optionList[index], value);
     }
-}
-
-/**
- * Convert an OptionTable object to a QVariantMap.
- * This action needs to get Persistence names of option characters.
- * Values of OptionTable are Stored whit the real name from
- * Persistence in a QVariantMap.
- * @param table             OptionsTable from option parser.
- * @param db                Pointer to the persistence.
- * @param onlyValues        Do not copy attributes without a value if it is set to true.
- * @return accountObj       A QVariantMap with the content of OptionTable.
- */
-QVariantMap variantMapFromOptionTable(const OptionTable& table, const Persistence *db, const bool onlyValues,
-                                      const QList<char> &removeList)
-{
-    QVariantMap accountObj;
-    QList<char> keyList = table.keys();
-    for (int index=0; index<keyList.size(); ++index) {
-        char key = keyList[index];
-        QVariant value = table.value(key);
-        QString stringKey = db->optionToRealName(key);
-        if (onlyValues) {
-            if (value.isValid()) {
-                accountObj.insert(stringKey, value);
-            }
-        } else {
-            accountObj.insert(stringKey, value);
-        }
-    }
-    for (int index=0; index<removeList.size(); ++index) {
-        QString stringKey = db->optionToRealName(removeList[index]);
-        accountObj.remove(stringKey);
-    }
-
-    return accountObj;
-}
-
-/**
- * Copy an OptionTable object and removes all values except a the given key list.
- * Each value of the given exception list will be copied into the result object.
- * @param exceptionKeyList          A list of keys which are an exception.
- * @param table                     An OptionTable from option parser.
- * @return result                   An OptionTable without values except of exceptionKeyList.
- */
-OptionTable removeAllValuesExceptOf(const QList<char>& exceptionKeyList, const OptionTable &table)
-{
-    OptionTable result;
-    QList<char> keyList = table.keys();
-    for (int index=0; index<keyList.size(); ++index) {
-        result.insert(keyList[index], QVariant(QVariant::Invalid));
-    }
-    for (int index=0; index<exceptionKeyList.size(); ++index) {
-        char key = exceptionKeyList[index];
-        QVariant value = table.value(key);
-        result.insert(key, value);
-    }
-
-    return result;
 }
 
 /**
