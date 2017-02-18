@@ -26,14 +26,11 @@ int main(int argc, char *argv[])
     // Get options from command line input.
     QList<OptionDefinition> optionDefinitionList = appCommand.commandsOptions();
     OptionParser parser(optionDefinitionList);
-    OptionTable optionTable = parser.parseOptions(argc, argv, 2);
+    OptionTable optionTable = parser.parseParameter(argc, argv, 2);
     if (parser.hasError()) {
         userInterface.printError(parser.errorMsg());
         userInterface.printHelp(appCommand.getHelpText());
         return 0;
-    }
-    if (parser.hasWarnings()) {
-        userInterface.printWarnings(parser.warnings());
     }
 
     // Need help?
@@ -43,21 +40,22 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    // Open database
-    Persistence* database = PersistenceFactory::createPersistence(PersistenceFactory::SqlPostgre);
-    if (! database->open()) {
-        userInterface.printError(database->error());
-        return 0;
-    }
-
-    // Get print order for console interface.
-    setAttributePrintOrder(userInterface, database);
-
     // If option '-a' is set.
     // This option must be replaced with all available options for the command.
     if (appCommand.isOptionAllSet()) {
         setAllOptions(optionTable);
     }
+
+    // Open database
+    Persistence* database = PersistenceFactory::createPersistence(PersistenceFactory::SqlPostgre);
+    if (! database->open()) {
+        userInterface.printError(database->error());
+        delete database;
+        return 0;
+    }
+
+    // Get print order for console interface.
+    setAttributePrintOrder(userInterface, database);
 
     // Execute command
     CommandProcessor processor(userInterface, database);
@@ -67,7 +65,7 @@ int main(int argc, char *argv[])
     database->close();
     delete database;
 
-    return 1;
+    return 0;
 }
 
 
