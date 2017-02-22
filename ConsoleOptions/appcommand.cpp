@@ -83,18 +83,6 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('g', NoArgument, QVariant::Invalid, QString("in"));
         list << OptionDefinition('v', NoArgument, QVariant::Invalid, QString("readable"));
         break;
-    case Find:
-        list << OptionDefinition('i', NoArgument, QVariant::Invalid);
-        list << OptionDefinition('p', OptionalArgument);
-        list << OptionDefinition('u', OptionalArgument);
-        list << OptionDefinition('k', OptionalArgument);
-        list << OptionDefinition('l', NoArgument, QVariant::Int);
-        list << OptionDefinition('s', OptionalArgument);
-        list << OptionDefinition('q', OptionalArgument);
-        list << OptionDefinition('t', OptionalArgument, QVariant::DateTime);
-        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString("answer"));
-        list << OptionDefinition('a', &m_optionAll, QString("all"));
-        break;
     default:
         break;
     }
@@ -184,8 +172,8 @@ QString AppCommand::applicationName(const char * const parameter)
 QStringList AppCommand::getHelpInGeneral()
 {
     QStringList help;
-    help << m_appName << " <command> <options>\n";
-    help << m_appName << " <command> --help\n";
+    help << QString(m_appName).append(" <command> <options>\n");
+    help << QString(m_appName).append(" <command> --help\n");
     help << "   Commands :  Help, New, GeneratePW, Show, Modify, Remove\n\n";
     help << "   help        Shows this help text.\n";
     help << "   new         Adds a new account to database.\n";
@@ -206,7 +194,7 @@ QStringList AppCommand::getHelpInGeneral()
 QStringList AppCommand::getHelpForNew()
 {
     QStringList help;
-    help << m_appName << " new <options>\n";
+    help << QString(m_appName).append(" new <options>\n");
     help << "Insert a new account into database.\n\n";
     help << "  -p <name>        The name of a provider, Webpage, Device ...\n";
     help << "  -u <name>        A username to login.\n";
@@ -230,7 +218,7 @@ QStringList AppCommand::getHelpForNew()
 QStringList AppCommand::getHelpForGeneratePW()
 {
     QStringList help;
-    help << m_appName << " generatepw <options>\n";
+    help << QString(m_appName).append(" generatepw <options>\n");
     help << "Generates a new passwort for an given account.\n";
     help << "If no length an character set is given application will try\n\n";
     help << "to read them from database.\n";
@@ -254,7 +242,7 @@ QStringList AppCommand::getHelpForGeneratePW()
 QStringList AppCommand::getHelpForModify()
 {
     QStringList help;
-    help << m_appName << " modify <options>\n";
+    help << QString(m_appName).append(" modify <options>\n");
     help << "Can modify some values of an account.\n\n";
     help << "  -i <id>          The id (primary key) to identify a database entry.\n";
     help << "or\n";
@@ -280,7 +268,7 @@ QStringList AppCommand::getHelpForModify()
 QStringList AppCommand::getHelpForShow()
 {
     QStringList help;
-    help << m_appName << " show <options>\n";
+    help << QString(m_appName).append(" show <options>\n");
     help << "Shows chosen infomation about one or more accounts.\n";
     help << "If to any option a value is given then this value will be used to find a database entry.\n\n";
     help << "  -i [id]          Show id of database entry or give an id to identify a database entry.\n";
@@ -306,7 +294,7 @@ QStringList AppCommand::getHelpForShow()
 QStringList AppCommand::getHelpForRemove()
 {
     QStringList help;
-    help << m_appName << " remove <options>\n";
+    help << QString(m_appName).append(" remove <options>\n");
     help << "Removes an account from database.\n\n";
     help << "  -i <id>          The id (primary key) to identify a database entry.\n";
     help << "or\n";
@@ -323,7 +311,7 @@ QStringList AppCommand::getHelpForRemove()
 QStringList AppCommand::getHelpForFile()
 {
     QStringList help;
-    help << m_appName << " file <options>\n";
+    help << QString(m_appName).append(" file <options>\n");
     help << "Writes data from database into a file. Or reads from file into database.\n\n";
     help << "  -f <path>        A full path to the file.\n";
     help << "  --file <path>  or  --file=<path>\n";
@@ -344,21 +332,9 @@ QStringList AppCommand::getHelpForFile()
 QStringList AppCommand::getHelpForFind()
 {
     QStringList help;
-    help << m_appName << " find <options>\n";
-    help << "Searches in all entries for the given parameter. Options with no value will cause an output\n";
-    help << "of that parameter in search result.";
-    help << "If to any option a value is given then this value will be used to find a database entry.\n\n";
-    help << "  -i               Id of database entry or give an id to identify a database entry.\n";
-    help << "  -p [name]        The provider name of an account.\n";
-    help << "  -u [name]        The username of an account.\n";
-    help << "  -k [password]    Password of an account.\n";
-    help << "  -q [question]    Security question of an account.\n";
-    help << "  -r [answer]      The answer (replay) to the security question.\n";
-    help << "  --answer <answer> | --answer=\"answer\" | --answer=<answer>\n";
-    help << "  -l               The length of password when generate.\n";
-    help << "  -s [definition]  Defined character which are used to generate a password.\n";
-    help << "  -t               The time when account was modified last time.\n";
-    help << "  -a               All values of an account.\n";
+    help << QString(m_appName).append(" find <searchMask>\n");
+    help << "Searches the database for all provider names and matches the 'searchMask'.\n";
+    help << "It is a fuzzy string compare to find a provider with a search mask.\n";
 
     return help;
 }

@@ -73,8 +73,9 @@ void ConsoleInterface::printSingleAccount(const QVariantMap &account)
 void ConsoleInterface::printHelp(const QStringList &help)
 {
     outStream << '\n';
-    foreach (const QString line, help) {
-        outStream << line;
+    outStream << m_colorLBlue << help[0] << m_colorStandard;
+    for(int index=1; index<help.size(); ++index) {
+        outStream << help[index];
     }
     outStream << '\n';
 }
@@ -106,6 +107,24 @@ void ConsoleInterface::printAccountList(const QList<QVariantMap> &accountList)
     foreach (const QVariantMap account, accountList) {
         printAccount(account, tableLayout);
     }
+}
+
+/**
+ * @brief ConsoleInterface::printSearchMatches
+ * @param sortedList
+ */
+void ConsoleInterface::printSearchMatches(const SortList<MatchObject> &sortedList)
+{
+    if (sortedList.isEmpty()) {
+        printWarnings("There was no match with database content !");
+        return;
+    }
+    outStream << m_colorLBlue << " Id  Provider" << endl;
+    outStream << "-----------------------------------------------" << m_colorStandard << endl;
+    SortListIterator<MatchObject> iterator = sortedList.end();
+    do {
+        outStream << iterator.data().toString() << endl;
+    } while (iterator.previous());
 }
 
 /**

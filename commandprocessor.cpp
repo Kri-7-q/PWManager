@@ -1,5 +1,6 @@
 #include "commandprocessor.h"
 #include "Persistence/filepersistence.h"
+#include "SearchAccount/matchstring.h"
 
 /**
  * @brief CommandProcessor::CommandProcessor
@@ -26,7 +27,7 @@ void CommandProcessor::process(AppCommand::Command command, OptionTable &optionT
             PwGenerator pwGenerator;
             int passwordLength = optionTable.value('l').toInt();
             QString characterDefinition = optionTable.value('s').toString();
-            QString password = pwGenerator.passwordFromDefinition(passwordLength, characterDefinition);
+            QString password = pwGenerator.passwordFromDefinition(static_cast<ushort>(passwordLength), characterDefinition);
             if (pwGenerator.hasError()) {
                 m_userInterface.printError(pwGenerator.errorMessage());
                 return;
@@ -129,8 +130,33 @@ void CommandProcessor::process(AppCommand::Command command, OptionTable &optionT
             // ...
         }
         break;
-    case AppCommand::Find:
+    case AppCommand::Find: {
+        QStringList list = optionTable.value('?').toStringList();
+        QString searchMask = (list.isEmpty()) ? QString() : list[0];
+        if (searchMask.length() < 3) {
+            m_userInterface.printError("Search mask must have at least three symbols !");
+            break;
+        }
+        OptionTable readProvider;
+        readProvider.insert('i', QVariant());
+        readProvider.insert('p', QVariant());
+        QList<QVariantMap> providerList = m_pDatabase->findAccountsLike(readProvider);
+        MatchString match(searchMask.toLower());
+        SortList<MatchObject> sortList;
+        for (int index=0; index<providerList.size(); ++index) {
+            QString key = m_pDatabase->optionToRealName('p');
+            QString text = providerList[index].value(key, QVariant()).toString();
+            int result = match.matchText(text.toLower());
+            if (result > 0) {
+                QString key = m_pDatabase->optionToRealName('i');
+                int id = providerList[index].value(key, QVariant()).toInt();
+                sortList.insert(MatchObject(id, text, result));
+            }
+            match.reset();
+        }
+        m_userInterface.printSearchMatches(sortList);
         break;
+    }
     default:
         break;
     }
