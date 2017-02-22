@@ -1,6 +1,8 @@
 #include "commandprocessor.h"
 #include "Persistence/filepersistence.h"
 #include "SearchAccount/matchstring.h"
+#include "Utility/sortlist.h"
+#include "SearchAccount/matchobject.h"
 
 /**
  * @brief CommandProcessor::CommandProcessor
@@ -148,13 +150,20 @@ void CommandProcessor::process(AppCommand::Command command, OptionTable &optionT
             QString text = providerList[index].value(key, QVariant()).toString();
             int result = match.matchText(text.toLower());
             if (result > 0) {
-                QString key = m_pDatabase->optionToRealName('i');
-                int id = providerList[index].value(key, QVariant()).toInt();
-                sortList.insert(MatchObject(id, text, result));
+                sortList.insert(MatchObject(index, result));
             }
             match.reset();
         }
-        m_userInterface.printSearchMatches(sortList);
+        QList<QVariantMap> matchList;
+        if (!sortList.isEmpty()) {
+            SortListIterator<MatchObject> iterator = sortList.end();
+            do {
+                int index = iterator.data().index();
+                matchList << providerList[index];
+            } while(iterator.previous());
+        }
+        m_userInterface.printAccountList(matchList);
+
         break;
     }
     default:

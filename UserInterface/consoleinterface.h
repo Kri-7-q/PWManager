@@ -8,8 +8,6 @@
  */
 
 #include "columnwidth.h"
-#include "Utility/sortlist.h"
-#include "SearchAccount/matchobject.h"
 #include <QTextStream>
 
 class ConsoleInterface
@@ -25,7 +23,6 @@ public:
     void printHelp(const QStringList &help);
     void printSuccessMsg(const QString &message);
     void printAccountList(const QList<QVariantMap> &accountList);
-    void printSearchMatches(const SortList<MatchObject>& sortedList);
 
 private:
     QTextStream outStream;

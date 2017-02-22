@@ -110,24 +110,6 @@ void ConsoleInterface::printAccountList(const QList<QVariantMap> &accountList)
 }
 
 /**
- * @brief ConsoleInterface::printSearchMatches
- * @param sortedList
- */
-void ConsoleInterface::printSearchMatches(const SortList<MatchObject> &sortedList)
-{
-    if (sortedList.isEmpty()) {
-        printWarnings("There was no match with database content !");
-        return;
-    }
-    outStream << m_colorLBlue << " Id  Provider" << endl;
-    outStream << "-----------------------------------------------" << m_colorStandard << endl;
-    SortListIterator<MatchObject> iterator = sortedList.end();
-    do {
-        outStream << iterator.data().toString() << endl;
-    } while (iterator.previous());
-}
-
-/**
  * Print an output header.
  * @param account
  * @param columnWidth
