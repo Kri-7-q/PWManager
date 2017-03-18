@@ -236,6 +236,9 @@ QSqlRecord PostgreSQL::recordFromOptionTable(const OptionTable &optionTable) con
     for (int index=0; index<optionList.size(); ++index) {
         char option = optionList[index];
         QString columnName = optionToRealName(option);
+        if (columnName.isEmpty()) {
+            continue;
+        }
         QVariant value = optionTable.value(option, QVariant());
         QSqlField field(columnName, value.type());
         field.setValue(value);
@@ -307,8 +310,9 @@ QSqlRecord PostgreSQL::recordFieldsWithValues(const OptionTable &optionTable) co
     QList<char> keyList = optionTable.keys();
     for (int index=0; index<keyList.size(); ++index) {
         QVariant value = optionTable.value(keyList[index], QVariant(QVariant::Invalid));
-        if (value.isValid()) {
-            recordAppendField(record, optionToRealName(keyList[index]), value);
+        QString columnName = optionToRealName(keyList[index]);
+        if (! columnName.isEmpty() && value.isValid()) {
+            recordAppendField(record, columnName, value);
         }
     }
 
