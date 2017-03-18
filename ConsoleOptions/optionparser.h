@@ -9,7 +9,7 @@ typedef QHash<char, QVariant> OptionTable;
 class OptionParser
 {
 public:
-    OptionParser(const QList<OptionDefinition>& definitionList);
+    OptionParser(const QList<OptionDefinition>& definitionList, const quint8 requiredFreeArgs = 0, const quint8 freeArgsAllowed = 0);
 
     enum ParseState { None, Option, LongOption, Argument, OptionalArgument, NonOptArgument };
 
@@ -26,10 +26,13 @@ protected:
     QString longOptionName(const QString &param) const;
     QString longOptionArgument(const QString &param) const;
     void setErrorMsg(const QString& msg);
+    void checkFreeArgumentList(const OptionTable& optionTable);
 
 private:
     const QList<OptionDefinition>& m_definitionList;
     QString m_errorMsg;
+    quint8 m_requireFreeArgs;
+    quint8 m_freeArgsAllowed;
 };
 
 #endif // OPTIONPARSER_H

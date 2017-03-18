@@ -5,8 +5,10 @@
  * The defined options can be parsed of that parser.
  * @param definitionList    A list of option definitions.
  */
-OptionParser::OptionParser(const QList<OptionDefinition> &definitionList) :
-    m_definitionList(definitionList)
+OptionParser::OptionParser(const QList<OptionDefinition> &definitionList, const quint8 requiredFreeArgs, const quint8 freeArgsAllowed) :
+    m_definitionList(definitionList),
+    m_requireFreeArgs(requiredFreeArgs),
+    m_freeArgsAllowed(freeArgsAllowed)
 {
 
 }
@@ -67,6 +69,7 @@ OptionTable OptionParser::parseParameter(const int argc, const char * const argv
             ++index;
             break;
         case NonOptArgument: {
+            // Non option argument. Free argument.
             QStringList argumentList;
             if (optionTable.contains('?')) {
                 argumentList = optionTable['?'].toStringList();
@@ -81,6 +84,7 @@ OptionTable OptionParser::parseParameter(const int argc, const char * const argv
             break;
         }
     }
+    checkFreeArgumentList(optionTable);
 
     return optionTable;
 }
@@ -291,4 +295,26 @@ QString OptionParser::longOptionArgument(const QString& param) const
 void OptionParser::setErrorMsg(const QString &msg)
 {
     m_errorMsg.append(msg).append('\n');
+}
+
+/**
+ * Check if all requiered free arguments are there or not and if
+ * the containing free arguments are allowed.
+ * @param freeArgumentList
+ */
+void OptionParser::checkFreeArgumentList(const OptionTable &optionTable)
+{
+    QStringList freeArgumentList = optionTable.value('?', QVariant()).toStringList();
+    int count = freeArgumentList.size();
+    if (count < m_requireFreeArgs) {
+        QString error = QString("There are to less free arguments. Found %1 and require %2.");
+        setErrorMsg(error.arg(count).arg(m_requireFreeArgs));
+    }
+    if (count > m_freeArgsAllowed) {
+        QString error = QString("Found %1 free arguments but there are only %2 allowed.");
+        setErrorMsg(error.arg(count).arg(m_freeArgsAllowed));
+        for (quint8 index=0; index<count; ++index) {
+            setErrorMsg(freeArgumentList[index]);
+        }
+    }
 }
