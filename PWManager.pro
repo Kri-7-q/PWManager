@@ -23,6 +23,8 @@ SOURCES += main.cpp \
     PasswordGenerator/pwgenerator.cpp \
     ConsoleOptions/appcommand.cpp \
     ConsoleOptions/optiontable.cpp \
+    ConsoleOptions/optionparser.cpp \
+    ConsoleOptions/optiondefinition.cpp \
     Persistence/credentials.cpp \
     Persistence/postgresql.cpp \
     PasswordGenerator/characterdefinitionlist.cpp \
@@ -41,6 +43,8 @@ HEADERS += \
     PasswordGenerator/pwgenerator.h \
     ConsoleOptions/appcommand.h \
     ConsoleOptions/optiontable.h \
+    ConsoleOptions/optiondefinition.h \
+    ConsoleOptions/optionparser.h \
     Persistence/credentials.h \
     Persistence/postgresql.h \
     PasswordGenerator/characterdefinitionlist.h \
@@ -51,8 +55,3 @@ HEADERS += \
     Utility/sortlist.h \
     SearchAccount/matchobject.h \
     SearchAccount/matchstring.h
-
-macx: LIBS += -L/usr/local/lib/ -lConsole.1.0.0
-
-INCLUDEPATH += /usr/local/include
-DEPENDPATH += /usr/local/include
