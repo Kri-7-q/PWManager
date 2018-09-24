@@ -84,7 +84,7 @@ bool Credentials::loadCredentialsFromFile(const QString &path)
     while (! inStream.atEnd()) {
         QString line = inStream.readLine();
         QStringList keyValueList = line.split(QChar(':'), QString::SkipEmptyParts);
-        Key key = (Key)m_keyMap.value(keyValueList[0]);
+        Key key = static_cast<Key>(m_keyMap.value(keyValueList[0]));
         QString value = keyValueList[1];
         m_credentials.insert(key, value);
     }

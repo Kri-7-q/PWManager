@@ -6,7 +6,10 @@
  * @param parameter The first parameter of command line input.
  */
 AppCommand::AppCommand(const int argc, const char * const argv[]) :
-    m_optionAll(false)
+    m_optionAll(false),
+    m_isHelpNeeded(false),
+    m_requiredParameter(0),
+    m_allowedParameter(0)
 {
     if (argc < 2) {
         m_command = Help;
@@ -41,7 +44,7 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('l', NeedArgument);
         list << OptionDefinition('s', NeedArgument);
         list << OptionDefinition('q', OptionalArgument);
-        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString("answer"));
+        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString(), QString("answer"));
         break;
     case GeneratePW:
         list << OptionDefinition('i', NeedArgument, QVariant::Int);
@@ -59,7 +62,7 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('s', OptionalArgument);
         list << OptionDefinition('q', OptionalArgument);
         list << OptionDefinition('t', OptionalArgument, QVariant::DateTime);
-        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString("answer"));
+        list << OptionDefinition('r', OptionalArgument, QVariant::String, QString(), QString("answer"));
         list << OptionDefinition('a', &m_optionAll, QString("all"));
         break;
     case Modify:
@@ -70,7 +73,7 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('l', NeedArgument, QVariant::Int);
         list << OptionDefinition('s', NeedArgument);
         list << OptionDefinition('q', NeedArgument);
-        list << OptionDefinition('r', NeedArgument, QVariant::String, QString("answer"));
+        list << OptionDefinition('r', NeedArgument, QVariant::String, QString(), QString("answer"));
         break;
     case Remove:
         list << OptionDefinition('i', NeedArgument);
@@ -78,10 +81,20 @@ QList<OptionDefinition> AppCommand::commandsOptions()
         list << OptionDefinition('u', NeedArgument);
         break;
     case File:
-        list << OptionDefinition('f', NeedArgument, QVariant::String, QString("file"));
-        list << OptionDefinition('o', NoArgument, QVariant::Invalid, QString("out"));
-        list << OptionDefinition('g', NoArgument, QVariant::Invalid, QString("in"));
-        list << OptionDefinition('v', NoArgument, QVariant::Invalid, QString("readable"));
+        list << OptionDefinition('f', NeedArgument, QVariant::String, QString(), QString("file"));
+        list << OptionDefinition('o', NoArgument, QVariant::Invalid, QString(), QString("out"));
+        list << OptionDefinition('g', NoArgument, QVariant::Invalid, QString(), QString("in"));
+        list << OptionDefinition('v', NoArgument, QVariant::Invalid, QString(), QString("readable"));
+        break;
+    case Find:
+        m_requiredParameter = 1;
+        m_allowedParameter = 1;
+        break;
+    case User:
+        list << OptionDefinition('n', NoArgument, QVariant::Invalid, QString(), QString("name"));
+        list << OptionDefinition('i', NoArgument, QVariant::Invalid, QString(), QString("id"));
+        list << OptionDefinition('m', NoArgument, QVariant::Invalid, QString(), QString("email"));
+        list << OptionDefinition('x', NoArgument, QVariant::Invalid, QString(), QString("active"));
         break;
     default:
         break;
@@ -111,6 +124,8 @@ QStringList AppCommand::getHelpText()
         return getHelpForFile();
     case Find:
         return getHelpForFind();
+    case User:
+        return getHelpForUser();
     default:
         return getHelpInGeneral();
     }
@@ -124,14 +139,14 @@ QStringList AppCommand::getHelpText()
 AppCommand::Command AppCommand::parseCommand(const QString &parameter)
 {
     QString commandString = QString(parameter).toLower();
+    if (commandString == "show") {
+        return Show;
+    }
     if (commandString == "new") {
         return New;
     }
     if (commandString == "generatepw") {
         return GeneratePW;
-    }
-    if (commandString == "show") {
-        return Show;
     }
     if (commandString == "modify") {
         return Modify;
@@ -144,6 +159,9 @@ AppCommand::Command AppCommand::parseCommand(const QString &parameter)
     }
     if (commandString == "find") {
         return Find;
+    }
+    if (commandString == "user") {
+        return User;
     }
 
     return Help;
@@ -182,6 +200,7 @@ QStringList AppCommand::getHelpInGeneral()
     help << "   modify      Modifies an existing account.\n";
     help << "   remove      Removes an existing account from database.\n";
     help << "   file        Write database content to file. Or read from file.\n";
+    help << "   user        Get information about the current user.\n";
     help << "   --help      Shows a help text to the command.\n";
 
     return help;
@@ -335,6 +354,25 @@ QStringList AppCommand::getHelpForFind()
     help << QString(m_appName).append(" find <searchMask>\n");
     help << "Searches the database for all provider names and matches the 'searchMask'.\n";
     help << "It is a fuzzy string compare to find a provider with a search mask.\n";
+
+    return help;
+}
+
+/**
+ * Help text for command user.
+ * @return
+ */
+QStringList AppCommand::getHelpForUser()
+{
+    QStringList help;
+    help << QString(m_appName).append(" user <options>\n");
+    help << "Shows infomation about the current computer user.\n";
+    help << "The user who is logged on currently will must be registered for this application.\n";
+    help << "Information to registered users are stored in database.\n\n";
+    help << "  -i | --id        Show id of user.\n";
+    help << "  -n | --name      Show the name of user.\n";
+    help << "  -m | --email     Show the users email.\n";
+    help << "  -x | --active    Show if the user is active.\n";
 
     return help;
 }

@@ -35,6 +35,9 @@ public:
     virtual QVariantMap findAccount(const OptionTable& searchObj) = 0;
     virtual QList<QVariantMap> findAccountsLike(const OptionTable& searchObj) = 0;
 
+    // User management
+    virtual QVariantMap findUser(const OptionTable& userInfo) = 0;
+
     // Read from persistence.
     // These methods open database connection by it self and close it afterwarts.
     virtual QList<QVariantMap> allPersistedAccounts() = 0;

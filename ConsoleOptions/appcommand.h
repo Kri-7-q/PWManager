@@ -30,13 +30,15 @@ public:
     AppCommand(const int argc, const char* const argv[]);
     ~AppCommand();
 
-    enum Command { None, New, GeneratePW, Show, Remove, Modify, Help, File, Find };
+    enum Command { None, New, GeneratePW, Show, Remove, Modify, Help, File, Find, User };
 
 private:
     Command m_command;
     bool m_optionAll;
     bool m_isHelpNeeded;
     QString m_appName;
+    quint8 m_requiredParameter;
+    quint8 m_allowedParameter;
 
 public:
     Command command() const                 { return m_command; }
@@ -44,6 +46,8 @@ public:
     bool isHelpNeeded() const               { return m_isHelpNeeded; }
     QList<OptionDefinition> commandsOptions();
     QStringList getHelpText();
+    quint8 requiredParam() const            { return m_requiredParameter; }
+    quint8 allowedParam() const             { return m_allowedParameter; }
 
 protected:
     Command parseCommand(const QString &parameter);
@@ -57,6 +61,7 @@ protected:
     QStringList getHelpForRemove();
     QStringList getHelpForFile();
     QStringList getHelpForFind();
+    QStringList getHelpForUser();
 };
 
 #endif // MANAGERCOMMAND_H

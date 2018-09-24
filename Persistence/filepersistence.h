@@ -8,7 +8,7 @@ class FilePersistence : public Persistence
 {
 public:
     FilePersistence();
-    ~FilePersistence();
+    ~FilePersistence() override;
 
     // Opens the file and writes the content.
     bool persistReadableFile(const QString& filePath, const QList<QVariantMap> &accountList);
@@ -21,6 +21,7 @@ public:
     int deleteAccountObject(const OptionTable &account) override;
     bool modifyAccountObject(const OptionTable &modifications) override;
     QVariantMap findAccount(const OptionTable &searchObj) override;
+    QVariantMap findUser(const OptionTable &userInfo) override;
     QList<QVariantMap> findAccountsLike(const OptionTable &searchObj) override;
     QList<QVariantMap> allPersistedAccounts() override;
     QString optionToRealName(const char option) const override;

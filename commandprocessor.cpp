@@ -166,6 +166,28 @@ void CommandProcessor::process(AppCommand::Command command, OptionTable &optionT
 
         break;
     }
+    case AppCommand::User: {
+        char* username = getenv("USER");
+        if (! username) {
+            username = getenv("USERNAME");
+        }
+        bool showUserName = optionTable.contains('n');
+        optionTable.insert('n', QString(username));
+        QVariantMap user = m_pDatabase->findUser(optionTable);
+        if (m_pDatabase->hasError()) {
+            m_userInterface.printError(m_pDatabase->error());
+            return;
+        }
+        if (! showUserName) {
+            optionTable.remove('n');
+        }
+        if (user.isEmpty()) {
+            m_userInterface.printError("You are not a valid user !");
+            return;
+        }
+        m_userInterface.printSingleAccount(user);
+        break;
+    }
     default:
         break;
     }

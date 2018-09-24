@@ -27,8 +27,8 @@ public:
      * @param data          The data object for this list node.
      */
     ListNode(const T& data) :
-        m_data(data),
         m_previous(0),
+        m_data(data),
         m_next(0)
     {
 

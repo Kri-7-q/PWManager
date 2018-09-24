@@ -205,6 +205,27 @@ QList<QVariantMap> PostgreSQL::allPersistedAccounts()
 }
 
 /**
+ * @brief Find a user in database 'user' table.
+ * @param userInfo
+ * @return
+ */
+QVariantMap PostgreSQL::findUser(const OptionTable &userInfo)
+{
+    QSqlDatabase db = QSqlDatabase::database(QString("local"));
+    QSqlRecord record = recordFromOptionTable(userInfo);
+    QString sqlSelect = db.driver()->sqlStatement(QSqlDriver::SelectStatement, QString("public.user"), record, false);
+    sqlSelect.append(" WHERE name='").append(userInfo.value('n').toString()).append("'");
+    QSqlQuery query(sqlSelect, db);
+    if (query.lastError().isValid()) {
+        setErrorExecutionFailed(query.lastError().databaseText(), query.lastError().driverText());
+        return QVariantMap();
+    }
+    query.next();
+
+    return accountObject(query.record());
+}
+
+/**
  * Private
  * Reads credentials from a file and initializes the database.
  */
@@ -328,39 +349,52 @@ QSqlRecord PostgreSQL::recordFieldsWithValues(const OptionTable &optionTable) co
  */
 QString PostgreSQL::optionToRealName(const char option) const
 {
+    QString name;
     switch (option) {
     case 'i':
-        return QString("id");
+        name = QString("id");
         break;
     case 'p':
-        return QString("provider");
+        name = QString("provider");
         break;
     case 'u':
-        return QString("username");
+        name = QString("username");
         break;
     case 'q':
-        return QString("question");
+        name = QString("question");
         break;
     case 'r':
-        return QString("answer");
+        name = QString("answer");
         break;
     case 'k':
-        return QString("password");
+        name = QString("password");
         break;
     case 'l':
-        return QString("passwordlength");
+        name = QString("passwordlength");
         break;
     case 's':
-        return QString("definedcharacter");
+        name = QString("definedcharacter");
         break;
     case 't':
-        return QString("lastmodify");
+        name = QString("lastmodify");
+        break;
+    case '#':
+        name = QString("userid");
+        break;
+    case 'n':
+        name = QString("name");
+        break;
+    case 'm':
+        name = QString("email");
+        break;
+    case 'x':
+        name = QString("active");
         break;
     default:
         break;
     }
 
-    return QString();
+    return name;
 }
 
 /**

@@ -21,6 +21,8 @@ public:
     QList<QVariantMap> findAccountsLike(const OptionTable &searchObj);
     // Can be called without open database connection.
     QList<QVariantMap> allPersistedAccounts();
+    // User management
+    QVariantMap findUser(const OptionTable& userInfo);
     // Error messages
     QString error() const               { return m_errorMsg; }
     bool hasError() const               { return !m_errorMsg.isEmpty(); }

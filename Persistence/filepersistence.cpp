@@ -118,6 +118,18 @@ QVariantMap FilePersistence::findAccount(const OptionTable &searchObj)
 }
 
 /**
+ * @brief Not implemneted for file persistence.
+ * @param userInfo
+ * @return
+ */
+QVariantMap FilePersistence::findUser(const OptionTable &userInfo)
+{
+    Q_UNUSED(userInfo)
+
+    return QVariantMap();
+}
+
+/**
  * @brief FilePersistence::findAccountsLike
  * @param searchObj
  * @return
