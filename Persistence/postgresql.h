@@ -19,10 +19,10 @@ public:
     bool modifyAccountObject(const OptionTable &modifications);
     QVariantMap findAccount(const OptionTable &searchObj);
     QList<QVariantMap> findAccountsLike(const OptionTable &searchObj);
-    // Can be called without open database connection.
+    // Can be called without open database connection. (Reads the whole table)
     QList<QVariantMap> allPersistedAccounts();
     // User management
-    QVariantMap findUser(const OptionTable& userInfo);
+    QVariantMap findUser(const OptionTable &userInfo);
     // Error messages
     QString error() const               { return m_errorMsg; }
     bool hasError() const               { return !m_errorMsg.isEmpty(); }

@@ -54,6 +54,25 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    // Check current user. (WhoAmI)
+    char* username = getenv("USER");
+    if (! username) {
+        username = getenv("USERNAME");
+    }
+    OptionTable userInfo;
+    userInfo.insert('n', QVariant(QString(username)));
+    userInfo.insert('i', QVariant());
+    QVariantMap userData = database->findUser(userInfo);
+    if (database->hasError()) {
+        userInterface.printError(database->error());
+        return 0;
+    }
+    if (userData.isEmpty()) {
+        userInterface.printError("You are not registered in this application.");
+        return 0;
+    }
+    optionTable.insert('U', userData.value(database->optionToRealName('i')));
+
     // Get print order for console interface.
     setAttributePrintOrder(userInterface, database);
 

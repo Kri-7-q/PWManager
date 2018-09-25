@@ -7,7 +7,7 @@ OptionDefinition::OptionDefinition() :
     m_option(0),
     m_dataType(QVariant::Invalid),
     m_optionType(InvalidDefinition),
-    m_pSwitch(NULL)
+    m_pSwitch(nullptr)
 {
 
 }
@@ -27,7 +27,7 @@ OptionDefinition::OptionDefinition(const char option, const OptionType optionArg
     m_dataType(dataType),
     m_longOption(longOption),
     m_optionType(optionArgument),
-    m_pSwitch(NULL),
+    m_pSwitch(nullptr),
     m_formatString(formatString)
 {
     if (formatString.isEmpty()) {
@@ -57,10 +57,10 @@ OptionDefinition::OptionDefinition(const char option, const OptionType optionArg
  */
 OptionDefinition::OptionDefinition(const char option, bool *pSwitch, const QString &longOption) :
     m_option(option),
-    m_pSwitch(pSwitch),
+    m_dataType(QVariant::Invalid),
     m_longOption(longOption),
     m_optionType(SwitchOn),
-    m_dataType(QVariant::Invalid)
+    m_pSwitch(pSwitch)
 {
 
 }

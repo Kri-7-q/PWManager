@@ -15,6 +15,7 @@
  * - file
  * - find
  * - help
+ * - user
  *
  * Each of these commands takes a specified set of options. the
  * option set are given here.

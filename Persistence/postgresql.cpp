@@ -58,7 +58,12 @@ bool PostgreSQL::persistAccountObject(const OptionTable &account)
 // Override
 int PostgreSQL::deleteAccountObject(const OptionTable &account)
 {
-    QSqlRecord record = recordFieldsWithValues(account);
+    QSqlRecord record = recordWithIdentifier(account);
+    if (record.isEmpty()) {
+        m_errorMsg.append(QString("Can not identify Account object in database!\n"));
+        m_errorMsg.append(QString("It needs a 'id' value. Or 'provider' and 'username' to identify an Account object.\n"));
+        return 0;
+    }
     QSqlDatabase db = QSqlDatabase::database(QString("local"));
     QString sqlDelete = db.driver()->sqlStatement(QSqlDriver::DeleteStatement, m_tableName, record, false);
     QString whereClause = db.driver()->sqlStatement(QSqlDriver::WhereStatement, m_tableName, record, true);
@@ -209,18 +214,22 @@ QList<QVariantMap> PostgreSQL::allPersistedAccounts()
  * @param userInfo
  * @return
  */
-QVariantMap PostgreSQL::findUser(const OptionTable &userInfo)
+QVariantMap PostgreSQL::findUser(const OptionTable& userInfo)
 {
     QSqlDatabase db = QSqlDatabase::database(QString("local"));
     QSqlRecord record = recordFromOptionTable(userInfo);
     QString sqlSelect = db.driver()->sqlStatement(QSqlDriver::SelectStatement, QString("public.user"), record, false);
-    sqlSelect.append(" WHERE name='").append(userInfo.value('n').toString()).append("'");
+    QSqlRecord whereRecord = recordFieldsWithValues(userInfo);
+    QString sqlWhere = db.driver()->sqlStatement(QSqlDriver::WhereStatement, QString("public.user"), whereRecord, false);
+    sqlSelect.append(' ').append(sqlWhere);
     QSqlQuery query(sqlSelect, db);
     if (query.lastError().isValid()) {
         setErrorExecutionFailed(query.lastError().databaseText(), query.lastError().driverText());
         return QVariantMap();
     }
-    query.next();
+    if (! query.next()) {
+        return QVariantMap();
+    }
 
     return accountObject(query.record());
 }
@@ -280,6 +289,8 @@ QSqlRecord PostgreSQL::recordFromOptionTable(const OptionTable &optionTable) con
 QSqlRecord PostgreSQL::recordWithIdentifier(const OptionTable &optionTable) const
 {
     QSqlRecord record;
+    QVariant userId = optionTable.value('U');
+    recordAppendField(record, optionToRealName('U'), userId);
     QVariant valueId = optionTable.value('i', QVariant(QVariant::Invalid));
     if (valueId.isValid()) {
         recordAppendField(record, optionToRealName('i'), valueId);
@@ -290,6 +301,8 @@ QSqlRecord PostgreSQL::recordWithIdentifier(const OptionTable &optionTable) cons
     if (valueProvider.isValid() && valueUsername.isValid()) {
         recordAppendField(record, optionToRealName('p'), valueProvider);
         recordAppendField(record, optionToRealName('u'), valueUsername);
+    } else {
+        return QSqlRecord();
     }
 
     return record;
@@ -306,6 +319,7 @@ QSqlRecord PostgreSQL::recordWithIdentifier(const OptionTable &optionTable) cons
  */
 QSqlRecord PostgreSQL::recordWithoutIdentifier(OptionTable optionTable) const
 {
+    optionTable.take('U');
     if (optionTable.value('i', QVariant(QVariant::Invalid)).isValid()) {
         optionTable.take('i');
         return recordFromOptionTable(optionTable);
@@ -378,7 +392,7 @@ QString PostgreSQL::optionToRealName(const char option) const
     case 't':
         name = QString("lastmodify");
         break;
-    case '#':
+    case 'U':
         name = QString("userid");
         break;
     case 'n':
