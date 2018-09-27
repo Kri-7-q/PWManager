@@ -46,13 +46,14 @@ public:
     bool isOptionAllSet() const             { return m_optionAll; }
     bool isHelpNeeded() const               { return m_isHelpNeeded; }
     QList<OptionDefinition> commandsOptions();
-    QStringList getHelpText();
+    QStringList getHelpText(const QList<OptionDefinition> &optionList = QList<OptionDefinition>()) const;
     quint8 requiredParam() const            { return m_requiredParameter; }
     quint8 allowedParam() const             { return m_allowedParameter; }
 
 protected:
     Command parseCommand(const QString &parameter);
     QString applicationName(const char* const parameter);
+    QHash<char, QStringList> optionsHelpTextMap() const;
 
     QStringList getHelpInGeneral();
     QStringList getHelpForNew();

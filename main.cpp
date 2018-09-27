@@ -22,6 +22,10 @@ int main(int argc, char *argv[])
     // and its options.
     AppCommand appCommand(argc, argv);
     AppCommand::Command command = appCommand.command();
+    if (command == AppCommand::Help) {
+        userInterface.printHelp(appCommand.getHelpText());
+        return 0;
+    }
 
     // Get options from command line input.
     QList<OptionDefinition> optionDefinitionList = appCommand.commandsOptions();
@@ -29,14 +33,14 @@ int main(int argc, char *argv[])
     OptionTable optionTable = parser.parseParameter(argc, argv, 2);
     if (parser.hasError()) {
         userInterface.printError(parser.errorMsg());
-        userInterface.printHelp(appCommand.getHelpText());
+        userInterface.printHelp(appCommand.getHelpText(optionDefinitionList));
         return 0;
     }
 
     // Need help?
     // Handle help before open database because it is not required for help text.
     if (command == AppCommand::Help || appCommand.isHelpNeeded()) {
-        userInterface.printHelp(appCommand.getHelpText());
+        userInterface.printHelp(appCommand.getHelpText(optionDefinitionList));
         return 0;
     }
 

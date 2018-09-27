@@ -112,6 +112,50 @@ QVariant OptionDefinition::convertValue(const QString &stringValue) const
 }
 
 /**
+ * Add a line of help text for this option.
+ * @param line      String with a line of help text. Without endline symbol.
+ * @return this     A reference of this OptionDefinition object.
+ */
+OptionDefinition& OptionDefinition::addHelpTextLine(const QString &line)
+{
+    m_helpTextLines << line;
+
+    return *this;
+}
+
+/**
+ * Set a string list with help text. A list of text lines.
+ * @param helpText          A list of text lines.
+ * @return this             Reference of this OptionDefinition object.
+ */
+OptionDefinition &OptionDefinition::setHelpTextLines(const QStringList &helpText)
+{
+    m_helpTextLines = helpText;
+
+    return *this;
+}
+
+/**
+ * Constructs a help text to this option.
+ * @return text         A String with multiple lines of help text.
+ */
+QString OptionDefinition::helpText() const
+{
+    QString text;
+    int line = 1;
+    text.append( helpTextOptionWithArgument(QString("value")) ).append( helpTextLine(0) );
+    if (! m_longOption.isEmpty()) {
+        text.append( helpTextOptionWithArgument(QString("value"), true) ).append( helpTextLine(1) );
+        ++line;
+    }
+    for (; line<m_helpTextLines.size(); ++line) {
+        text.append( QString(m_maxLength, QChar(' ')) ).append( helpTextLine(line) );
+    }
+
+    return text;
+}
+
+/**
  * Virtual
  * Converts a string value to a boolean value.
  * Recognized strings are '1', 't', 'T', 'ture' and 'True'. These strings will
@@ -223,3 +267,48 @@ qulonglong OptionDefinition::convertToULongLong(const QString &stringValue) cons
     return stringValue.toULongLong();
 }
 
+/**
+ * Get help string of option and long option with option argument. String will be of length 35.
+ * For instance:    -i <value>      or      --index [value]
+ * @param name          The name of options argument for help text.
+ * @return argument     Argument description for help text.
+ */
+QString OptionDefinition::helpTextOptionWithArgument(const QString &name, const bool longOption) const
+{
+    QString argument('-');
+    if (longOption) {
+        argument.append('-').append(m_longOption);
+    } else {
+        argument.append(m_option);
+    }
+    argument.append(' ');
+    switch (m_optionType) {
+    case NeedArgument:
+        argument.append('<').append(name).append('>');
+        break;
+    case OptionalArgument:
+        argument.append('[').append(name).append(']');
+        break;
+    default:
+        break;
+    }
+    if (argument.length() < m_maxLength) {
+        argument.append(QString(m_maxLength - argument.length(), QChar(' ')));
+    }
+
+    return argument;
+}
+
+/**
+ * Get a line of option help text. If there is no more line an empty string is returned.
+ * @param line          The line of help text list.
+ * @return
+ */
+QString OptionDefinition::helpTextLine(const int line) const
+{
+    if (line >= m_helpTextLines.size()) {
+        return QString('\n');
+    }
+
+    return m_helpTextLines[line];
+}

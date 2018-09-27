@@ -55,6 +55,9 @@ public:
     void setSwitchOn()              { *m_pSwitch = true; }
 
     QVariant convertValue(const QString& stringValue) const;
+    OptionDefinition& addHelpTextLine(const QString& line);
+    OptionDefinition& setHelpTextLines(const QStringList& helpText);
+    QString helpText() const;
 
 protected:
     // Virtual converter functions
@@ -69,12 +72,18 @@ protected:
     virtual qulonglong convertToULongLong(const QString& stringValue) const;
 
 private:
+    QString helpTextOptionWithArgument(const QString& name, const bool longOption = false) const;
+    QString helpTextLine(const int line) const;
+
+private:
     char m_option;
     QVariant::Type m_dataType;
     QString m_longOption;
     OptionType m_optionType;
     bool* m_pSwitch;
     QString m_formatString;
+    QStringList m_helpTextLines;
+    static const quint16 m_maxLength = 25;
 };
 
 #endif // OPTIONDEFINITION_H
