@@ -55,3 +55,9 @@ HEADERS += \
     Utility/sortlist.h \
     SearchAccount/matchobject.h \
     SearchAccount/matchstring.h
+
+# --------------------------------------------------------------
+#               Install application
+# --------------------------------------------------------------
+target.path = /usr/local/bin
+INSTALLS += target

@@ -54,16 +54,6 @@ protected:
     Command parseCommand(const QString &parameter);
     QString applicationName(const char* const parameter);
     QHash<char, QStringList> optionsHelpTextMap() const;
-
-    QStringList getHelpInGeneral();
-    QStringList getHelpForNew();
-    QStringList getHelpForGeneratePW();
-    QStringList getHelpForModify();
-    QStringList getHelpForShow();
-    QStringList getHelpForRemove();
-    QStringList getHelpForFile();
-    QStringList getHelpForFind();
-    QStringList getHelpForUser();
 };
 
 #endif // MANAGERCOMMAND_H
