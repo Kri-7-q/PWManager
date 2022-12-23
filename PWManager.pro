@@ -8,7 +8,7 @@ QT       += core sql xml
 
 QT       -= gui
 
-TARGET = PWManager
+TARGET = pwmanager
 CONFIG   += console
 CONFIG   -= app_bundle
 

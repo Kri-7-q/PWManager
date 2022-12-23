@@ -40,6 +40,7 @@ private:
     QString m_appName;
     quint8 m_requiredParameter;
     quint8 m_allowedParameter;
+    QMap<QString, Command> m_commandMap;
 
 public:
     Command command() const                 { return m_command; }

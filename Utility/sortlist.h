@@ -61,7 +61,7 @@ protected:
  * Template class:          SortList
  * -------------------------------------------------------------------------------------
  * A list which sortes the inserted elements. Each element is inserted at the position
- * where is should take place to make the list soted. The list elements are sorted
+ * where is should take place to make the list sorted. The list elements are sorted
  * ascending. To get the elements descending get a iterator with end(). Iterate backwards
  * through the list.
  */

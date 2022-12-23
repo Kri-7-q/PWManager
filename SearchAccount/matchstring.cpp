@@ -17,10 +17,10 @@ MatchString::MatchString(const QString &searchMask) :
 }
 
 /**
- * Take a symbol from the text which is to search for the search mask.
+ * Take a symbol from the text which is to search in the search mask.
  * Search mask is in a QHash map. If the symbol is part of the search mask
  * the hash map will return a QVector with index values.
- * The first match is store into a QVector member attribute.
+ * The first match is stored into a QVector member attribute.
  * If a second match appears then the first index values are incremented.
  * If the symbol index and the incremented index has some in common then
  * a second match has been proved.
@@ -54,10 +54,10 @@ void MatchString::matchSymbol(const QChar &symbol)
 }
 
 /**
- * Tkes a text to match it against the search mask.
- * There must be three symbol matches at least to
- * counted. But each appereance of three matches is
- * counted.
+ * Takes a text to match it against the search mask.
+ * There must be three symbol matches at least to be
+ * counted. Each appereance of three matches and more
+ * are counted.
  * @param text      A text to search for the mask.
  * @return          The number of symbol which mtached.
  */
@@ -71,8 +71,8 @@ int MatchString::matchText(const QString &text)
 }
 
 /**
- * Calculates how match matches were found.
- * @return      The number of symbol which matched.
+ * Calculates how much matches were found.
+ * @return      The number of symbols which matched.
  */
 int MatchString::matchResult()
 {
@@ -98,6 +98,8 @@ void MatchString::reset()
 
 /**
  * Creates the QHash map from the serach mask string.
+ * Collects characters of the mask and stores them with its positions
+ * in the map.
  * @param mask
  */
 void MatchString::createSearchMask(const QString &mask)
@@ -127,8 +129,8 @@ QVector<quint16> MatchString::incrementVector(const QVector<quint16> &vector) co
 }
 
 /**
- * Takes two QVector objects and find the value are both object have in common.
- * Returns a vector object which contains all values which are equal in both
+ * Takes two QVector objects and find the value which are both object have in common.
+ * Returns a vector object containing all values which are equal in both
  * given vector objects. It make an intersection of two sets.
  * @param first         One vector object to intersect with another one.
  * @param second        The other vector object to intersect.

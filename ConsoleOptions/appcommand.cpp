@@ -124,19 +124,19 @@ QStringList AppCommand::getHelpText(const QList<OptionDefinition>& optionList) c
     QStringList list;
     switch (m_command) {
     case New:
-        list << QString(m_appName).append(" new -p <value> -u <value> [other options]\n");
+        list << QString(m_appName).append(" new -p <provider> -u <username> [other options]\n");
         list << "Insert a new account into database.\n\n";
         break;
     case GeneratePW:
-        list << QString(m_appName).append(" generatepw -i <value> [other options]\n");
-        list << QString(m_appName).append(" generatepw -p <value> -u <value> [other options]\n");
+        list << QString(m_appName).append(" generatepw -i <id> [other options]\n");
+        list << QString(m_appName).append(" generatepw -p <provider> -u <username> [other options]\n");
         list << "Generates a new passwort for an given account.\n";
         list << "If no length and character set is given application will try\n";
         list << "to read them from database.\n\n";
         break;
     case Modify:
-        list << QString(m_appName).append(" modify -i <value> [other options]\n");
-        list << QString(m_appName).append(" modify -p <value> -u <value> [other options]\n");
+        list << QString(m_appName).append(" modify -i <id> [other options]\n");
+        list << QString(m_appName).append(" modify -p <provider> -u <username> [other options]\n");
         list << "Can modify some values of an account.\n\n";
         break;
     case Show:
@@ -145,8 +145,8 @@ QStringList AppCommand::getHelpText(const QList<OptionDefinition>& optionList) c
         list << "If to any option a value is given then this value will be used to find a database entry.\n\n";
         break;
     case Remove:
-        list << QString(m_appName).append(" remove -i <value>\n");
-        list << QString(m_appName).append(" remove -p <value>\n");
+        list << QString(m_appName).append(" remove -i <id>\n");
+        list << QString(m_appName).append(" remove -p <rovider> -u <username>\n");
         list << "Removes an account from database.\n\n";
         break;
     case File:
@@ -193,33 +193,17 @@ QStringList AppCommand::getHelpText(const QList<OptionDefinition>& optionList) c
  */
 AppCommand::Command AppCommand::parseCommand(const QString &parameter)
 {
-    QString commandString = QString(parameter).toLower();
-    if (commandString == "show") {
-        return Show;
-    }
-    if (commandString == "new") {
-        return New;
-    }
-    if (commandString == "generatepw") {
-        return GeneratePW;
-    }
-    if (commandString == "modify") {
-        return Modify;
-    }
-    if (commandString == "remove") {
-        return Remove;
-    }
-    if (commandString == "file") {
-        return File;
-    }
-    if (commandString == "find") {
-        return Find;
-    }
-    if (commandString == "user") {
-        return User;
-    }
+    m_commandMap.insert(QString("new"), New);
+    m_commandMap.insert(QString("generatepw"), GeneratePW);
+    m_commandMap.insert(QString("show"), Show);
+    m_commandMap.insert(QString("remove"), Remove);
+    m_commandMap.insert(QString("modify"), Modify);
+    m_commandMap.insert(QString("help"), Help);
+    m_commandMap.insert(QString("file"), File);
+    m_commandMap.insert(QString("find"), Find);
+    m_commandMap.insert(QString("user"), User);
 
-    return Help;
+    return m_commandMap.value(parameter, Help);
 }
 
 /**
@@ -263,9 +247,9 @@ QHash<char, QStringList> AppCommand::optionsHelpTextMap() const
                                           << "[] Range of characters, {} set of characters, * wildcard for amount\n"
                                           << "5[a-z] means 5 characters in the range from a to z.\n"
                                           << "The amount of defined characters MUST fit the password length.\n");
-    helpTextMap.insert('t', QStringList() << "The date of last modify.");
-    helpTextMap.insert('a', QStringList() << "Set all available options.");
-    helpTextMap.insert('e', QStringList() << "Select all accounts in database.");
+    helpTextMap.insert('t', QStringList() << "The date of last modify.\n");
+    helpTextMap.insert('a', QStringList() << "Set all available options.\n");
+    helpTextMap.insert('e', QStringList() << "Select all accounts in database.\n");
     helpTextMap.insert('f', QStringList() << "A full path to the file.\n");
     helpTextMap.insert('o', QStringList() << "To write database content into a file.\n");
     helpTextMap.insert('g', QStringList() << "Read (get) data from a file and store it to database.\n");

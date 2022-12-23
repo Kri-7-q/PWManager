@@ -114,7 +114,7 @@ void setAllOptions(OptionTable &optionTable)
  * @param database
  */
 void setAttributePrintOrder(ConsoleInterface& iface, Persistence* database) {
-    QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k' << 'l' << 's' << 'q' << 'r' << 't' << 'n' << 'm' << 'x';
+    QList<char> optionList = QList<char>() << 'i' << 'p' << 'u' << 'k' << 'l' << 's' << 'q' << 'r' << 't' << 'U' << 'n' << 'm' << 'x';
     QStringList printOrder;
     for (int index=0; index<optionList.size(); ++index) {
         printOrder << database->optionToRealName(optionList[index]);
