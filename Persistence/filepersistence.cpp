@@ -319,9 +319,9 @@ bool FilePersistence::persistReadableFile(const QString &filePath, const QList<Q
                 continue;
             }
             QString line = keyList[keyIndex] + ": " + value.toString();
-            outStream << line << endl;
+            outStream << line << Qt::endl;
         }
-        outStream << QString("-----------------------------------------") << endl;
+        outStream << QString("-----------------------------------------") << Qt::endl;
     }
     close();
 

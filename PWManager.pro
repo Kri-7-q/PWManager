@@ -1,63 +1,61 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2015-01-14T15:58:43
-#
-#-------------------------------------------------
+QT -= gui
+QT += sql
 
-QT       += core sql xml
+CONFIG += c++17 console
+CONFIG -= app_bundle
 
-QT       -= gui
+# You can make your code fail to compile if it uses deprecated APIs.
+# In order to do so, uncomment the following line.
+#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-TARGET = pwmanager
-CONFIG   += console
-CONFIG   -= app_bundle
-
-TEMPLATE = app
-
-
-SOURCES += main.cpp \
-    Persistence/persistence.cpp \
-    UserInterface/consoleinterface.cpp \
-    UserInterface/columnwidth.cpp \
-    PasswordGenerator/characterdefinition.cpp \
-    PasswordGenerator/pwgenerator.cpp \
-    ConsoleOptions/appcommand.cpp \
-    ConsoleOptions/optiontable.cpp \
-    ConsoleOptions/optionparser.cpp \
-    ConsoleOptions/optiondefinition.cpp \
-    Persistence/credentials.cpp \
-    Persistence/postgresql.cpp \
-    PasswordGenerator/characterdefinitionlist.cpp \
-    Persistence/persistencefactory.cpp \
-    Persistence/filepersistence.cpp \
-    commandprocessor.cpp \
-    Utility/range.cpp \
-    SearchAccount/matchobject.cpp \
-    SearchAccount/matchstring.cpp
+SOURCES += \
+        ConsoleOptions/appcommand.cpp \
+        ConsoleOptions/optiondefinition.cpp \
+        ConsoleOptions/optionparser.cpp \
+        ConsoleOptions/optiontable.cpp \
+        PasswordGenerator/characterdefinition.cpp \
+        PasswordGenerator/characterdefinitionlist.cpp \
+        PasswordGenerator/pwgenerator.cpp \
+        Persistence/credentials.cpp \
+        Persistence/filepersistence.cpp \
+        Persistence/persistence.cpp \
+        Persistence/persistencefactory.cpp \
+        Persistence/postgresql.cpp \
+        SearchAccount/matchobject.cpp \
+        SearchAccount/matchstring.cpp \
+        UserInterface/columnwidth.cpp \
+        UserInterface/consoleinterface.cpp \
+        Utility/range.cpp \
+        main.cpp \
+        commandprocessor.cpp
 
 HEADERS += \
-    Persistence/persistence.h \
-    UserInterface/consoleinterface.h \
-    UserInterface/columnwidth.h \
-    PasswordGenerator/characterdefinition.h \
-    PasswordGenerator/pwgenerator.h \
-    ConsoleOptions/appcommand.h \
-    ConsoleOptions/optiontable.h \
-    ConsoleOptions/optiondefinition.h \
-    ConsoleOptions/optionparser.h \
-    Persistence/credentials.h \
-    Persistence/postgresql.h \
-    PasswordGenerator/characterdefinitionlist.h \
-    Persistence/persistencefactory.h \
-    Persistence/filepersistence.h \
-    commandprocessor.h \
-    Utility/range.h \
-    Utility/sortlist.h \
-    SearchAccount/matchobject.h \
-    SearchAccount/matchstring.h
+        ConsoleOptions/appcommand.h \
+        ConsoleOptions/optiondefinition.h \
+        ConsoleOptions/optionparser.h \
+        ConsoleOptions/optiontable.h \
+        PasswordGenerator/characterdefinition.h \
+        PasswordGenerator/characterdefinitionlist.h \
+        PasswordGenerator/pwgenerator.h \
+        Persistence/credentials.h \
+        Persistence/filepersistence.h \
+        Persistence/persistence.h \
+        Persistence/persistencefactory.h \
+        Persistence/postgresql.h \
+        SearchAccount/matchobject.h \
+        SearchAccount/matchstring.h \
+        UserInterface/columnwidth.h \
+        UserInterface/consoleinterface.h \
+        Utility/range.h \
+        Utility/sortlist.h \
+        commandprocessor.h
 
-# --------------------------------------------------------------
-#               Install application
-# --------------------------------------------------------------
-target.path = /usr/local/bin
-INSTALLS += target
+TRANSLATIONS += \
+    PWManager_de_DE.ts
+CONFIG += lrelease
+CONFIG += embed_translations
+
+# Default rules for deployment.
+qnx: target.path = /tmp/$${TARGET}/bin
+else: unix:!android: target.path = /opt/$${TARGET}/bin
+!isEmpty(target.path): INSTALLS += target

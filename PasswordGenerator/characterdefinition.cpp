@@ -1,5 +1,6 @@
 #include "characterdefinition.h"
 #include <QTime>
+#include <QRandomGenerator>
 
 /**
  * Constructor
@@ -54,9 +55,9 @@ QList<QChar> CharacterDefinition::getRandomSet() const
 {
     QList<QChar> listCopy(m_characterList);
     QList<QChar> list;
-    qsrand(QTime::currentTime().msec());
+    QRandomGenerator::global()->seed(QTime::currentTime().msec());
     for (int i=0; i<m_amount; ++i) {
-        int index = qrand() % listCopy.size();
+        int index = QRandomGenerator::global()->generate() % listCopy.size();
         list << listCopy.takeAt(index);
     }
 
@@ -75,5 +76,5 @@ void CharacterDefinition::setCharacterRange(const QChar from, const QChar to)
     m_characterList << from;
     do {
         m_characterList << QChar(++current);
-    } while (current != to);
+    } while (current != to.unicode());
 }

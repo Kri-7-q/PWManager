@@ -1,5 +1,6 @@
 #include "pwgenerator.h"
 #include <QTime>
+#include <QRandomGenerator>
 
 /**
  * Constructor
@@ -41,9 +42,9 @@ QString PwGenerator::passwordFromDefinition(const ushort passwordLength, const Q
     }
     QList<QChar> characterList = definitionList.getPasswordCharacterList();
     QString password;
-    qsrand(QTime::currentTime().msec());
+    QRandomGenerator::global()->seed(QTime::currentTime().msec());
     while (! characterList.isEmpty()) {
-        int index = qrand() % characterList.size();
+        int index = QRandomGenerator::global()->generate() % characterList.size();
         QChar current = characterList.takeAt(index);
         password.append(current);
     }
